@@ -1,5 +1,6 @@
+'use client';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ArrowLeft, Coffee, Heart, Settings2, ShieldCheck } from 'lucide-react';
 import { PIECES_PER_SIDE, type Difficulty, type Preferences } from '../../state/preferences';
 import { StoryButton } from '../components/StoryButton';
@@ -8,7 +9,7 @@ export function ParentsPage({ preferences, onChange }: { preferences: Preference
   const [answer, setAnswer] = useState('');
   const [error, setError] = useState(false);
   return <main className="site-page parents-page">
-    <header className="sub-header"><Link to="/" className="icon-button" aria-label="Home"><ArrowLeft/></Link><div><span className="eyebrow">A little space for grown-ups</span><h1>For Parents</h1></div><ShieldCheck size={29}/></header>
+    <header className="sub-header"><Link href="/" className="icon-button" aria-label="Home"><ArrowLeft/></Link><div><span className="eyebrow">A little space for grown-ups</span><h1>For Parents</h1></div><ShieldCheck size={29}/></header>
     {!verified ? <section className="parents-panel parent-gate">
       <ShieldCheck size={40}/><h2>Grown-ups only</h2>
       <p>This area contains settings and an external donation link. A simple reading challenge helps keep little explorers in the game; it is not age verification.</p>

@@ -1,5 +1,6 @@
+'use client';
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ArrowLeft, ArrowRight, Lightbulb, RefreshCcw, Volume2, VolumeX } from 'lucide-react';
 import { ThreeApplication } from '@three-shell/core';
 import { JigsawScene } from '../scene/jigsaw.scene';
@@ -40,7 +41,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
   function restart() { setComplete(false); setCount(0); setShowHint(false); setGame(n => n + 1); }
   return <div className="game-shell">
     <header className="game-header">
-      <Link to="/puzzles" className="icon-button" aria-label="Back to puzzles"><ArrowLeft/></Link>
+      <Link href="/puzzles" className="icon-button" aria-label="Back to puzzles"><ArrowLeft/></Link>
       <div className="game-heading"><span className="eyebrow">A little adventure</span><h1>{puzzle.title}</h1></div>
       <div className="game-actions">
         {preferences.hintsEnabled && <button className="icon-button" title="Picture hint" aria-label={showHint ? 'Hide picture hint' : 'Show picture hint'} aria-pressed={showHint} onClick={() => setShowHint(v => !v)}><Lightbulb/></button>}
@@ -56,9 +57,9 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
         <span className="complete-star" aria-hidden>🌟</span><h2 id="complete-title">Hooray! You did it!</h2>
         <img className="complete-image" src={puzzle.image} alt={puzzle.title}/>
         <p>You finished {puzzle.title}!</p>
-        <Link className="story-button story-button--primary" to={'/play/' + nextId}>Next Puzzle <ArrowRight size={20}/></Link>
+        <Link className="story-button story-button--primary" href={'/play/' + nextId}>Next Puzzle <ArrowRight size={20}/></Link>
         <StoryButton tone="secondary" onClick={restart}>Play Again <RefreshCcw size={18}/></StoryButton>
-        <Link className="text-link" to="/puzzles">Back to pictures</Link>
+        <Link className="text-link" href="/puzzles">Back to pictures</Link>
       </section></div>}
     </main>
     <footer className="game-footer"><span>✦ Pick up a piece and find its happy place.</span><span>Take your time — there is no timer!</span></footer>

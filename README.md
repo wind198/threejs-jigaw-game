@@ -1,65 +1,50 @@
 # Little Jigsaw 3D
 
-A completely free, static, storybook-style jigsaw game for children aged 3–10. Built with React, Vite, Three.js and the existing ThreeShell core runtime.
+A free, pastel storybook-style 3D jigsaw game for kids aged 3–10.
 
-## Run
+**Stack:** Next.js 16 App Router (static export), React 19, Three.js/ThreeShell, Zustand, usehooks-ts, TypeScript. No runtime server, database, account or external content API.
 
-Node.js 22+:
+## Development
 
-```sh
+Requires Node.js 22+.
+
+```bash
 npm install
 npm run dev
 npm test
+npm run typecheck
 npm run build
 ```
 
-Open http://localhost:3000.
+The static site is emitted to `out/` by `npm run build`, suitable for any static host that serves directory `index.html` files. `next.config.ts` enables `trailingSlash` for that deployment model.
 
-> This branch introduces new dependencies and temporarily removes the stale pnpm lockfile. Regenerate and commit a lockfile before merging; CI currently installs with npm.
+## SEO / Pages
 
-## Pages
+- `/` — Home, indexable
+- `/puzzles/` — catalog page, indexable
+- `/play/sunny-valley/` — game-specific static HTML with puzzle metadata
+- `/play/forest-friends/` — game-specific static HTML with puzzle metadata
+- `/play/moon-adventure/` — game-specific static HTML with puzzle metadata
+- `/parents/` — parent settings and privacy; excluded from search indexing
 
-Navigation uses `HashRouter`, requiring **no server rewrites**:
+`app/play/[puzzleId]/page.tsx` uses `generateStaticParams` to pre-render every catalog puzzle and `generateMetadata` for unique titles, descriptions and Open Graph summaries. Add puzzles to `src/content/puzzles.ts` to create more pages at build time.
 
-- `/#/` — storybook Home.
-- `/#/puzzles` — picture gallery with category filtering.
-- `/#/play/:puzzleId` — Three.js puzzle game, optional image hint, mute, restart and completion overlay.
-- `/#/parents` — adult-oriented UX gate, preferences, privacy disclosure and an optional third-party support link.
+**Domain-dependent SEO:** Canonical URLs, sitemap.xml and production Open Graph absolute image URLs should be configured after the public site domain is selected. Do not deploy with placeholder domains.
 
-## First visit
+## First-visit setup
 
-The first visit presents a one-time setup for puzzle size (2×2 / 3×3 / 5×5), hints and sound. `usehooks-ts/useLocalStorage` persists these preferences under `little-jigsaw:preferences:v1`. The setup does not reappear unless browser site data is cleared. Parents can change the settings from the parent area.
+The first visit shows a one-time setup (4, 9, or 25 pieces, hints and sound). `usehooks-ts/useLocalStorage` persists settings as `little-jigsaw:preferences:v1`. A parent can change them later in `/parents/`; without stored preferences, onboarding appears again after browser site data is cleared.
 
-The library filter uses ephemeral Zustand state. Completed puzzle IDs are stored in `little-jigsaw:completed:v1`; **piece-by-piece in-progress restoration is not yet implemented**.
+Completed puzzle IDs are saved in `little-jigsaw:completed:v1`; in-progress individual piece positions are **not yet restored**.
 
-## Content
+## Static assets
 
-The puzzle catalog is defined in `src/content/puzzles.ts`. All bundled images are in `public/assets/puzzles`; audio in `public/assets/audio`. Add a puzzle by committing an image and adding a manifest entry. No backend, account system, CMS or external media hosting is required.
+All puzzle illustrations and audio are committed under `public/assets/`. The catalog is a TypeScript manifest in `src/content/puzzles.ts`. ThreeShell owns scene rendering, raycasting, snapping and animations; React owns page chrome and overlays.
 
-The current three illustration files are first-party SVG assets. The 3D puzzle generator reuses the existing Bézier outline, extruded geometry, raycasting, snap and return-to-tray behavior.
+## Limitations and pending QA
 
-## Architecture
-
-- `src/ui`: React screens, game HUD and storybook CSS.
-- `src/state/preferences.ts`: localStorage-backed browser preferences, using **usehooks-ts**.
-- `src/state/game-ui.ts`: transient Zustand UI state.
-- `src/content/puzzles.ts`: statically bundled catalog.
-- `src/domain/puzzle.ts`: renderer-independent puzzle model.
-- `src/scene`: ThreeShell simulation/presentation pipeline, Three.js resources, drag/animation operators.
-- `packages/core`: existing ThreeShell core source.
-
-## Parent safety
-
-The child-facing game has no ads, purchasing or external navigation. The Parents page uses a **reading challenge only as a UX deterrent**, not secure age verification. The Buy Me a Coffee entry currently points to the provider homepage, **not a configured creator checkout**.
-
-## Pending checks
-
-- Run CI and browser smoke tests with dependencies installed.
-- Verify high-piece-count portrait usability.
-- Add keyboard/non-drag placement alternatives and robust focus-trapped dialogs.
-- Add full in-progress restoration, accessible motion/audio refinements and a real creator donation URL.
-
-## References
-
-- https://github.com/wind198/three-shell-monorepo
-- https://github.com/wind198/tutorial__jigsaw-animation
+- Parent reading challenge is a UX deterrent, **not age verification**.
+- The parent support link points to Buy Me a Coffee's homepage until a creator URL is configured.
+- Browser and responsive QA still required; particularly 25-piece portrait trays and accessibility.
+- No font/CDN dependencies at runtime; local/system fonts are used.
+- A fresh lockfile and passing build CI are required before merge.
