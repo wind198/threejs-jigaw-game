@@ -17,3 +17,12 @@ jobs:
         run: npm test
       - name: Typecheck and production build
         run: npm run build
+      - name: Verify prerendered SEO pages
+        run: |
+          test -f out/index.html
+          test -f out/puzzles/index.html
+          test -f out/play/sunny-valley/index.html
+          test -f out/play/forest-friends/index.html
+          test -f out/play/moon-adventure/index.html
+          test -f out/robots.txt
+          grep -q 'Forest Friends' out/play/forest-friends/index.html

@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: { params: Promise<{ puzzleId:
   return {
     title: puzzle.title + ' — Free Jigsaw Puzzle',
     description: puzzle.description + '. Play this free 3D puzzle in your browser with no ads or account.',
-    openGraph: { title: puzzle.title + ' | Little Jigsaw 3D', description: puzzle.description, images: [puzzle.image] },
+    openGraph: { title: puzzle.title + ' | Little Jigsaw 3D', description: puzzle.description, ...(process.env.NEXT_PUBLIC_SITE_URL ? { images: [puzzle.image] } : {}) },
   };
 }
 export default async function Page({ params }: { params: Promise<{ puzzleId: string }> }) {
