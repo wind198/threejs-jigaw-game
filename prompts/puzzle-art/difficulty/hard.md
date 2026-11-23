@@ -1,0 +1,1 @@
+Artwork complexity: HARD. Rich coherent scene with 8–12 recognizable landmarks and more environmental details, including variation across all quadrants. Preserve strong local contrast and visual hierarchy; never replace difficulty with random visual noise.

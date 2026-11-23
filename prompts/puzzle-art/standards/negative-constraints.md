@@ -1,0 +1,1 @@
+Never include text, numbers, lettering, signatures, logos, ads, watermarks, labels, UI widgets, jigsaw lines, missing sections, collage frames, giant empty areas, distressing imagery, weapons, frightening expressions or copyrighted media characters. No tilted photographs of a puzzle board. Do not imitate any living artist's unique style.

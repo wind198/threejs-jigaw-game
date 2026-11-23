@@ -44,3 +44,6 @@ coverage/
 
 # Vercel
 .vercel/
+
+# Generated image prompt text (not shipped in the site)
+/output/prompts/

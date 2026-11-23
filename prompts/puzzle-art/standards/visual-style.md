@@ -1,0 +1,1 @@
+Use a cohesive premium children's storybook style: lightly textured, softly shaded, tactile shapes and friendly simplified anatomy. Avoid photorealism, hard glossy 3D renders, harsh black outlines, neon poster design, and inconsistent character designs. The art must remain appealing at thumbnail size and when seen on a 3D tabletop.

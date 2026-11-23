@@ -15,6 +15,14 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Unit tests
         run: npm test
+      - name: Validate image prompt library
+        run: npm run prompts:validate
+      - name: Smoke test generated prompt output
+        run: |
+          npm run prompts -- generate --category animals --output ./output/prompts
+          test -f output/prompts/animals/forest-friends--easy.txt
+          test -f output/prompts/animals/farm-animals--easy.txt
+          test -f output/prompts/manifest.json
       - name: Typecheck and production build
         run: npm run build
       - name: Verify prerendered SEO pages

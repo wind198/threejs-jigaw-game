@@ -1,0 +1,1 @@
+Artwork complexity: MEDIUM. Two or three prominent subjects and 5–8 recognizable visual landmarks at different depths; moderate environmental texture; pleasant variety of colors and forms. Each quadrant should contain useful clues without becoming cluttered.
