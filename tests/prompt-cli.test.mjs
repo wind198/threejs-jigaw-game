@@ -28,7 +28,7 @@ test('a generated image prompt is deterministic and fully self-contained', async
   assert.match(first.content, /wind198\\/threejs-jigaw-game/);
   assert.match(first.content, /src\\/assets\\/puzzle-images\\/animals\\/forest-friends--easy\\.png/);
   assert.match(first.content, /one new pull request/i);
-  assert.match(first.content, /Do not.*fabricate/i);
+  assert.match(first.content, /fabricate an image/i);
   assert.match(first.content, /Artwork complexity: EASY/);
   assert.doesNotMatch(first.content, /\{\{|prompts\/puzzle-art\//);
   const hard = await composePrompt(theme, 'hard');
