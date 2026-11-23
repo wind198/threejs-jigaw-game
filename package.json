@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "npx serve out",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/*.test.mjs"
+    "test": "node --import tsx --test tests/*.test.mjs",
+    "prompts": "tsx scripts/prompt-cli/index.ts",
+    "prompts:validate": "tsx scripts/prompt-cli/index.ts validate"
   },
   "dependencies": {
     "@three-shell/core": "file:./packages/core",
@@ -25,6 +27,12 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@types/three": "^0.181.0",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "@clack/prompts": "^0.11.0",
+    "commander": "^14.0.0",
+    "fast-glob": "^3.3.3",
+    "gray-matter": "^4.0.3",
+    "tsx": "^4.20.0",
+    "zod": "^4.1.0"
   }
 }

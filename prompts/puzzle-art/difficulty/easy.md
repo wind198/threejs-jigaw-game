@@ -1,0 +1,1 @@
+Artwork complexity: EASY (youngest players). One or two large focal subjects, clean silhouettes, 3–5 clearly distinguishable supporting landmarks, simplified scenery, broad but non-uniform areas of color. Preserve strong separation between subject and background without turning the image into a flat icon.
