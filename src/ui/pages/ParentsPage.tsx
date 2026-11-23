@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Coffee, Heart, Settings2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Coffee, ExternalLink, Heart, Settings2, ShieldCheck } from 'lucide-react';
 import { PIECES_PER_SIDE, type Difficulty, type Preferences } from '../../state/preferences';
 import { StoryButton } from '../components/StoryButton';
 export function ParentsPage({ preferences, onChange }: { preferences: Preferences; onChange: (p: Preferences) => void }) {
@@ -29,7 +29,7 @@ export function ParentsPage({ preferences, onChange }: { preferences: Preference
         {([['hintsEnabled', 'Show friendly hints'], ['soundEnabled', 'Play sound effects'], ['animationsEnabled', 'Enable celebrations and motion']] as const).map(([key,label])=><label key={key} className="toggle-row"><input type="checkbox" checked={preferences[key]} onChange={e => onChange({ ...preferences, [key]:e.target.checked })}/>{label}</label>)}
       </section>
       <section className="parents-panel"><h2><Heart size={23}/> Keep Little Jigsaw free</h2><p>Every puzzle is free forever. If you enjoy our little project, adults can optionally support future artwork and improvements.</p>
-        <a className="story-button story-button--secondary" href="https://www.buymeacoffee.com/" target="_blank" rel="noopener noreferrer"><Coffee size={18}/> About Buy Me a Coffee ↗</a>
+        <a className="story-button story-button--secondary" href="https://www.buymeacoffee.com/" target="_blank" rel="noopener noreferrer"><Coffee size={18}/> About Buy Me a Coffee <ExternalLink size={16} aria-hidden/></a>
         <small className="muted">This is a placeholder, not a creator donation link. No payments are collected by the game.</small>
       </section>
       <section className="parents-panel"><h2><ShieldCheck size={23}/> Privacy & About</h2><p>No accounts, advertising, analytics, or backend. Game settings live in this browser's localStorage. Deleting site data removes them. All puzzle artwork is bundled with the website.</p><p>The Buy Me a Coffee link leads to a third-party website with its own privacy policy.</p></section>
