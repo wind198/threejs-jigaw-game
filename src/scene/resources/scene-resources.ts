@@ -52,7 +52,7 @@ export class SceneResources{
     const worldHeight=Math.max(11.9,18/aspect);this.camera.left=-worldHeight*aspect/2;this.camera.right=worldHeight*aspect/2;
     this.camera.top=worldHeight/2;this.camera.bottom=-worldHeight/2;this.camera.updateProjectionMatrix();this.renderer.setSize(w,h)
   }
-  dispose(){this.resizeObserver.disconnect();for(const obj of this.objects){if(obj instanceof THREE.Mesh){obj.geometry.dispose();
+  onSceneDestroy(){this.resizeObserver.disconnect();for(const obj of this.objects){if(obj instanceof THREE.Mesh){obj.geometry.dispose();
     for(const m of Array.isArray(obj.material)?obj.material:[obj.material])m.dispose();}this.scene.remove(obj)}
     this.artwork.dispose();this.renderer.dispose();this.renderer.domElement.remove();}
 }

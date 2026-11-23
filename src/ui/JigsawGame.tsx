@@ -1,14 +1,26 @@
 import {useEffect,useRef,useState} from 'react';
 import {ThreeApplication} from '@three-shell/core';
 import {JigsawScene} from '../scene/jigsaw.scene';
+import {JigsawSceneModule,JIGSAW_CONTAINER,JIGSAW_PROGRESS,JIGSAW_COMPLETE} from '../scene/jigsaw.module';
 import './style.css';
 export function JigsawGame(){
   const host=useRef<HTMLDivElement>(null);const app=useRef<ThreeApplication<any>|null>(null);
   const [count,setCount]=useState(0);const [complete,setComplete]=useState(false);const [game,setGame]=useState(0);
   useEffect(()=>{const element=host.current;if(!element)return;
-    const scene=new JigsawScene(element,setCount,()=>setComplete(true));
-    const runtime=new ThreeApplication(scene,()=>scene.dispose());app.current=runtime;runtime.start();
-    return()=>{app.current=null;void runtime.dispose()};
+    let cancelled=false;
+    let runtime:ThreeApplication|null=null;
+    void (async()=>{
+      try {
+        const created=await ThreeApplication.create(JigsawSceneModule,JigsawScene,[
+          {provide:JIGSAW_CONTAINER,useValue:element},
+          {provide:JIGSAW_PROGRESS,useValue:setCount},
+          {provide:JIGSAW_COMPLETE,useValue:()=>setComplete(true)},
+        ]);
+        if(cancelled){await created.dispose();return;}
+        runtime=created;app.current=created;created.start();
+      } catch(error) { if(!cancelled) console.error('Jigsaw bootstrap failed:',error); }
+    })();
+    return()=>{cancelled=true;app.current=null;if(runtime)void runtime.dispose()};
   },[game]);
   function restart(){setComplete(false);setCount(0);setGame(n=>n+1)}
   return <div className="game-shell">
