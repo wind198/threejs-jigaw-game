@@ -2,16 +2,16 @@
 import Link from 'next/link';
 import { ArrowRight, Heart, ShieldCheck, Sparkles } from 'lucide-react';
 import { Brand } from '../components/Brand';
-import { StoryButton } from '../components/StoryButton';
+import { IllustrationIcon } from '../components/IllustrationIcon';
 import { puzzles } from '../../content/puzzles';
 export function HomePage() {
   return <div className="site-page home-page">
     <header className="site-header"><Brand/><Link className="parent-link" href="/parents"><ShieldCheck size={19}/> For parents</Link></header>
     <main>
       <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-cloud hero-cloud--one" aria-hidden>✿</div>
-        <div className="hero-cloud hero-cloud--two" aria-hidden>✦</div>
-        <div className="hero-mascot" aria-hidden>🦊 🌼 🐰</div>
+        <div className="hero-cloud hero-cloud--one"><IllustrationIcon name="sunflower" size={92} decorative /></div>
+        <div className="hero-cloud hero-cloud--two"><IllustrationIcon name="glowing-star" size={80} decorative /></div>
+        <div className="hero-mascot"><IllustrationIcon name="fox" size={100} decorative /><IllustrationIcon name="sunflower" size={65} decorative /><IllustrationIcon name="rabbit" size={100} decorative /></div>
         <p className="eyebrow"><Sparkles size={18}/> A little world of wonder</p>
         <h1 id="hero-title">Every piece is<br/><span>a little adventure.</span></h1>
         <p>Pick a picture, discover its pieces, and make something wonderful.</p>

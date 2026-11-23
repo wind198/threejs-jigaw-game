@@ -8,6 +8,7 @@ import { JigsawSceneModule, JIGSAW_CONFIG, JIGSAW_CONTAINER, JIGSAW_PROGRESS, JI
 import type { Puzzle } from '../content/puzzles';
 import { PIECES_PER_SIDE, type Preferences } from '../state/preferences';
 import { StoryButton } from './components/StoryButton';
+import { IllustrationIcon } from './components/IllustrationIcon';
 export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle: Puzzle; preferences: Preferences; onComplete: () => void; nextId: string; completedCount: number }) {
   const host = useRef<HTMLDivElement>(null);
   const [count, setCount] = useState(0);
@@ -52,9 +53,9 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     <main className="game-stage">
       <div className="scene" ref={host}/>
       {showHint && <div className="hint-preview"><img src={puzzle.image} alt={'Completed picture: ' + puzzle.title}/><span>Find this picture!</span></div>}
-      <div className="game-progress" aria-live="polite"><span>⭐ Your puzzle</span><strong>{count} / {pieces}</strong><div className="progress-track"><div style={{ width: (count / pieces * 100) + '%' }}/></div></div>
+      <div className="game-progress" aria-live="polite"><span><IllustrationIcon name="star" size={19} decorative/> Your puzzle</span><strong>{count} / {pieces}</strong><div className="progress-track"><div style={{ width: (count / pieces * 100) + '%' }}/></div></div>
       {complete && <div className="modal-backdrop"><section className="modal-card complete-card" role="dialog" aria-modal="true" aria-labelledby="complete-title">
-        <span className="complete-star" aria-hidden>🌟</span><h2 id="complete-title">Hooray! You did it!</h2>
+        <IllustrationIcon name="glowing-star" size={72} decorative className="complete-star"/><h2 id="complete-title">Hooray! You did it!</h2>
         <img className="complete-image" src={puzzle.image} alt={puzzle.title}/>
         <p>You finished {puzzle.title}!</p>
         <Link className="story-button story-button--primary" href={'/play/' + nextId}>Next Puzzle <ArrowRight size={20}/></Link>
@@ -62,6 +63,6 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
         <Link className="text-link" href="/puzzles">Back to pictures</Link>
       </section></div>}
     </main>
-    <footer className="game-footer"><span>✦ Pick up a piece and find its happy place.</span><span>Take your time — there is no timer!</span></footer>
+    <footer className="game-footer"><span><IllustrationIcon name="star" size={15} decorative/> Pick up a piece and find its happy place.</span><span>Take your time — there is no timer!</span></footer>
   </div>;
 }
