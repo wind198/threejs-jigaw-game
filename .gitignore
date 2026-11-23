@@ -1,13 +1,18 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 
-# Build
+# Next.js
+.next/
+out/
+
+# Build (legacy / misc)
 dist/
 dist-ssr/
+build/
 *.local
 
-# Vite / TypeScript
-.vite/
+# TypeScript
 *.tsbuildinfo
 
 # Logs
@@ -37,5 +42,5 @@ Thumbs.db
 coverage/
 .nyc_output/
 
-# Package manager
-.pnpm-store/
+# Vercel
+.vercel/
