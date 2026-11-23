@@ -1,61 +1,50 @@
-# Little Jigsaw 3D — Three.js + ThreeShell core runtime
+# Little Jigsaw 3D
 
-A migration of [tutorial__jigsaw-animation](https://github.com/wind198/tutorial__jigsaw-animation) into a **real 3D tabletop puzzle** with a **fixed, straight-down orthographic camera**. It retains the original 3×3, one-target-per-piece gameplay, seeded puzzle shapes, snap tolerance, return-to-tray behavior, and replay.
+A free, pastel storybook-style 3D jigsaw game for kids aged 3–10.
 
-## Run
+**Stack:** Next.js 16 App Router (static export), React 19, Three.js/ThreeShell, Zustand, usehooks-ts, TypeScript. No runtime server, database, account or external content API.
 
-Requires Node.js 22+ and network access to npm packages.
+## Development
+
+Requires Node.js 22+.
 
 ```bash
 npm install
 npm run dev
+npm test
+npm run typecheck
+npm run build
 ```
 
-Open http://localhost:3000. Production build: `npm run build`; domain tests: `npm test`.
+The static site is emitted to `out/` by `npm run build`, suitable for any static host that serves directory `index.html` files. `next.config.ts` enables `trailingSlash` for that deployment model.
 
-## Controls
+## SEO / Pages
 
-- Mouse/touch: press a loose piece, drag it over the matching board location, release.
-- A piece snaps if released within 34% of its cell size from its own target.
-- Unmatched pieces animate back to their original home positions.
-- New game resets the board; completion opens a replay modal.
+- `/` — Home, indexable
+- `/puzzles/` — catalog page, indexable
+- `/play/sunny-valley/` — game-specific static HTML with puzzle metadata
+- `/play/forest-friends/` — game-specific static HTML with puzzle metadata
+- `/play/moon-adventure/` — game-specific static HTML with puzzle metadata
+- `/parents/` — parent settings and privacy; excluded from search indexing
 
-## Architecture
+`app/play/[puzzleId]/page.tsx` uses `generateStaticParams` to pre-render every catalog puzzle and `generateMetadata` for unique titles, descriptions and Open Graph summaries. Add puzzles to `src/content/puzzles.ts` to create more pages at build time.
 
-```
-src/domain/puzzle.ts                 # deterministic edge generation + puzzle state machine
-src/scene/jigsaw.scene.ts            # explicit ThreeShell simulation/presentation pipelines
-src/scene/geometry/piece-mesh.ts     # Bezier outline -> extruded mesh + UV mapping
-src/scene/resources/                # Three.js resources, artwork, board, cleanup
-src/scene/operators/drag.operator.ts # pointer raycasting -> command queue
-src/scene/operators/animation.operator.ts # deterministic snap/drop animations
-src/scene/state/puzzle-store.ts      # state + mesh registry
-src/ui/JigsawGame.tsx                # React host/HUD/replay
-packages/core/                     # upstream ThreeShell core source (DI, lifecycle, fixed-step runtime)
-```
+**Domain-dependent SEO:** Canonical URLs, sitemap.xml and production Open Graph absolute image URLs should be configured after the public site domain is selected. Do not deploy with placeholder domains.
 
-**Coordinate contract:** `x` points right, `z` points down the board, `y` points upward. The existing 2D-style puzzle geometry `(x,y)` maps to `(x-3, 0, y-3)` in the scene, centered on a 6 × 6 board. Piece mesh shape vertices are oriented with `rotation.x = -PI/2`. The camera is at `(0,18,0)` with `up=(0,0,-1)` and no orbit controls.
+## First-visit setup
 
-## ThreeShell core integration
+The first visit shows a one-time setup (4, 9, or 25 pieces, hints and sound). `usehooks-ts/useLocalStorage` persists settings as `little-jigsaw:preferences:v1`. A parent can change them later in `/parents/`; without stored preferences, onboarding appears again after browser site data is cleared.
 
-The application embeds the real `packages/core/src` from
-[three-shell-monorepo](https://github.com/wind198/three-shell-monorepo/tree/main/packages/core)
-(source snapshot `de486033`), exposed as a local source package for Vite.
+Completed puzzle IDs are saved in `little-jigsaw:completed:v1`; in-progress individual piece positions are **not yet restored**.
 
-- `JigsawSceneModule` registers puzzle state, graphics resources, drag and animation operators, and the scene itself through `@Module`.
-- Browser host element and HUD callbacks are explicit bootstrap provider tokens.
-- `ThreeApplication.create()` initializes providers, starts the fixed-step runtime, and handles reverse-order lifecycle cleanup on unmount/restart.
-- React StrictMode's asynchronous mount/unmount is guarded against stale bootstraps.
-- Puzzle mechanics and renderer behavior are unchanged.
+## Static assets
 
-The core is independent of Three.js and React. The local copy deliberately uses TypeScript source exports instead of the monorepo's compiled `dist` exports so Vite can consume it without an extra build step.
+All puzzle illustrations and audio are committed under `public/assets/`. The catalog is a TypeScript manifest in `src/content/puzzles.ts`. ThreeShell owns scene rendering, raycasting, snapping and animations; React owns page chrome and overlays.
 
-## Validation
+## Limitations and pending QA
 
-`npm test` uses Node's built-in test runner and works without downloaded packages. UI/Three.js compilation and browser rendering require dependencies and should be tested locally after `npm install`.
-
-## Provenance
-
-The original game was a clean-room focused port. This integration copies the upstream ThreeShell core source and wires its DI/lifecycle into the game:
-- https://github.com/wind198/tutorial__jigsaw-animation
-- https://github.com/wind198/three-shell-monorepo
+- Parent reading challenge is a UX deterrent, **not age verification**.
+- The parent support link points to Buy Me a Coffee's homepage until a creator URL is configured.
+- Browser and responsive QA still required; particularly 25-piece portrait trays and accessibility.
+- No font/CDN dependencies at runtime; local/system fonts are used.
+- A fresh lockfile and passing build CI are required before merge.
