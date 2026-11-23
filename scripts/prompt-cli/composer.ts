@@ -26,7 +26,7 @@ export async function validateLibrarySources(libraryRoot = DEFAULT_LIBRARY): Pro
   ];
   await Promise.all(paths.map(path => source(libraryRoot, path)));
   const template = await source(libraryRoot, 'templates/final-prompt.md');
-  for (const token of ['SYSTEM', 'STANDARDS', 'DIFFICULTY', 'TITLE', 'CATEGORY', 'THEME']) {
+  for (const token of ['SYSTEM', 'STANDARDS', 'DIFFICULTY', 'TITLE', 'CATEGORY', 'THEME', 'THEME_ID', 'DIFFICULTY_ID']) {
     if (!template.includes('{{' + token + '}}')) throw new Error('Missing template token: ' + token);
   }
 }
@@ -52,6 +52,8 @@ export async function composePrompt(theme: Theme, difficulty: Difficulty = theme
     STANDARDS: standards.map((content, index) => '### ' + STANDARD_FILES[index].replace('.md', '').replaceAll('-', ' ') + '\n\n' + content).join('\n\n'),
     DIFFICULTY: difficultyContent,
     TITLE: theme.title,
+    THEME_ID: theme.id,
+    DIFFICULTY_ID: difficulty,
     CATEGORY: theme.category,
     THEME: theme.content,
   };

@@ -1,20 +1,35 @@
 # Little Jigsaw — prompt library
 
-This library is the source of truth for generating **self-contained text prompts** to copy manually into an image-generation tool. It does **not** call an image API.
+This library produces **self-contained instructions for an image-capable GPT with access to GitHub**. The CLI composes the prompts; it does **not** generate images, push commits, or open pull requests.
 
-- `SYSTEM.md`: universal square, age-safe, no-frame requirements
-- `standards/`: non-negotiable art direction, composition, vintage-background contrast, puzzle suitability and exclusions
-- `difficulty/`: optional scene complexity profiles, separate from the number of pieces
+The composed prompt now asks the receiving GPT to:
+1. Generate **one** square, storybook-style PNG illustration.
+2. Validate composition, child safety, and contrast with the game's cream/beige board.
+3. Use a connected GitHub capability to submit **one PR per generated image** to [`wind198/threejs-jigaw-game`](https://github.com/wind198/threejs-jigaw-game), targeting `main`.
+4. Add the actual PNG under `src/assets/puzzle-images/<category>/<theme-id>--<difficulty>.png`.
+5. Return a verified PR URL, or explain if image-generation/GitHub tools are unavailable. **Never invent a PR.**
+
+For example, generating `forest-friends` at `easy` difficulty requests this path:
+
+```text
+src/assets/puzzle-images/animals/forest-friends--easy.png
+```
+
+**Note:** The existing runtime puzzle catalog currently references `public/assets/puzzles/`. Committing an image under `src/assets/puzzle-images/` does **not automatically make it playable**. Publishing selected approved artwork and integrating it into `src/content/puzzles.ts` is a separate review task.
+
+## Source layout
+
+- `SYSTEM.md`: image-generation and GitHub PR submission contract
+- `standards/`: mandatory illustration guidelines, contrast, composition, puzzle suitability, exclusions
+- `difficulty/`: visual complexity profiles (independent of piece count)
 - `themes/<category>/<id>.md`: independent scene briefs with YAML frontmatter
 - `templates/final-prompt.md`: deterministic assembly template
 
-Use `npm run prompts` for a guided Clack session, or `npm run prompts -- generate --category animals` for a whole category. `npm run prompts -- validate` checks source definitions. Output is written under `output/prompts/` (gitignored).
+Use `npm run prompts` for an interactive Clack session, `npm run prompts -- generate forest-friends` for one image prompt, or `npm run prompts -- generate --category animals` for a category. Run `npm run prompts -- validate` to validate the library. Generated prompts are written to gitignored `output/prompts/`.
 
-All generated `.txt` prompts include the full instructions. There are no references to local Markdown files that an external image-generation provider would need to resolve. Copy the whole text file.
+Each `.txt` file is self-contained: manually copy it into an image-capable GPT that has the required GitHub connection. **Bulk CLI generation creates multiple independent prompt files; it does not automatically submit any PR.** Submit each prompt separately to generate a corresponding PR.
 
-After manually generating and approving an illustration, save the final square image in `public/assets/puzzles/` and register it in `src/content/puzzles.ts`. Generated text files are **not** runtime assets.
-
-Theme source format:
+## Theme source format
 
 ```md
 ---
@@ -33,4 +48,4 @@ Explain major elements.
 Describe contrast.
 ```
 
-Use category and IDs in lowercase kebab-case. IDs must be unique across categories. Keep the illustration style coherent across the whole library. The shared standards are mandatory and cannot be overridden by a theme brief.
+Use category and IDs in lowercase kebab-case. IDs must be unique across categories. Shared mandatory standards take precedence over incompatible theme instructions.
