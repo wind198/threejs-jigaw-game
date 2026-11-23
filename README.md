@@ -1,61 +1,65 @@
-# Little Jigsaw 3D — Three.js + ThreeShell core runtime
+# Little Jigsaw 3D
 
-A migration of [tutorial__jigsaw-animation](https://github.com/wind198/tutorial__jigsaw-animation) into a **real 3D tabletop puzzle** with a **fixed, straight-down orthographic camera**. It retains the original 3×3, one-target-per-piece gameplay, seeded puzzle shapes, snap tolerance, return-to-tray behavior, and replay.
+A completely free, static, storybook-style jigsaw game for children aged 3–10. Built with React, Vite, Three.js and the existing ThreeShell core runtime.
 
 ## Run
 
-Requires Node.js 22+ and network access to npm packages.
+Node.js 22+:
 
-```bash
+```sh
 npm install
 npm run dev
+npm test
+npm run build
 ```
 
-Open http://localhost:3000. Production build: `npm run build`; domain tests: `npm test`.
+Open http://localhost:3000.
 
-## Controls
+> This branch introduces new dependencies and temporarily removes the stale pnpm lockfile. Regenerate and commit a lockfile before merging; CI currently installs with npm.
 
-- Mouse/touch: press a loose piece, drag it over the matching board location, release.
-- A piece snaps if released within 34% of its cell size from its own target.
-- Unmatched pieces animate back to their original home positions.
-- New game resets the board; completion opens a replay modal.
+## Pages
+
+Navigation uses `HashRouter`, requiring **no server rewrites**:
+
+- `/#/` — storybook Home.
+- `/#/puzzles` — picture gallery with category filtering.
+- `/#/play/:puzzleId` — Three.js puzzle game, optional image hint, mute, restart and completion overlay.
+- `/#/parents` — adult-oriented UX gate, preferences, privacy disclosure and an optional third-party support link.
+
+## First visit
+
+The first visit presents a one-time setup for puzzle size (2×2 / 3×3 / 5×5), hints and sound. `usehooks-ts/useLocalStorage` persists these preferences under `little-jigsaw:preferences:v1`. The setup does not reappear unless browser site data is cleared. Parents can change the settings from the parent area.
+
+The library filter uses ephemeral Zustand state. Completed puzzle IDs are stored in `little-jigsaw:completed:v1`; **piece-by-piece in-progress restoration is not yet implemented**.
+
+## Content
+
+The puzzle catalog is defined in `src/content/puzzles.ts`. All bundled images are in `public/assets/puzzles`; audio in `public/assets/audio`. Add a puzzle by committing an image and adding a manifest entry. No backend, account system, CMS or external media hosting is required.
+
+The current three illustration files are first-party SVG assets. The 3D puzzle generator reuses the existing Bézier outline, extruded geometry, raycasting, snap and return-to-tray behavior.
 
 ## Architecture
 
-```
-src/domain/puzzle.ts                 # deterministic edge generation + puzzle state machine
-src/scene/jigsaw.scene.ts            # explicit ThreeShell simulation/presentation pipelines
-src/scene/geometry/piece-mesh.ts     # Bezier outline -> extruded mesh + UV mapping
-src/scene/resources/                # Three.js resources, artwork, board, cleanup
-src/scene/operators/drag.operator.ts # pointer raycasting -> command queue
-src/scene/operators/animation.operator.ts # deterministic snap/drop animations
-src/scene/state/puzzle-store.ts      # state + mesh registry
-src/ui/JigsawGame.tsx                # React host/HUD/replay
-packages/core/                     # upstream ThreeShell core source (DI, lifecycle, fixed-step runtime)
-```
+- `src/ui`: React screens, game HUD and storybook CSS.
+- `src/state/preferences.ts`: localStorage-backed browser preferences, using **usehooks-ts**.
+- `src/state/game-ui.ts`: transient Zustand UI state.
+- `src/content/puzzles.ts`: statically bundled catalog.
+- `src/domain/puzzle.ts`: renderer-independent puzzle model.
+- `src/scene`: ThreeShell simulation/presentation pipeline, Three.js resources, drag/animation operators.
+- `packages/core`: existing ThreeShell core source.
 
-**Coordinate contract:** `x` points right, `z` points down the board, `y` points upward. The existing 2D-style puzzle geometry `(x,y)` maps to `(x-3, 0, y-3)` in the scene, centered on a 6 × 6 board. Piece mesh shape vertices are oriented with `rotation.x = -PI/2`. The camera is at `(0,18,0)` with `up=(0,0,-1)` and no orbit controls.
+## Parent safety
 
-## ThreeShell core integration
+The child-facing game has no ads, purchasing or external navigation. The Parents page uses a **reading challenge only as a UX deterrent**, not secure age verification. The Buy Me a Coffee entry currently points to the provider homepage, **not a configured creator checkout**.
 
-The application embeds the real `packages/core/src` from
-[three-shell-monorepo](https://github.com/wind198/three-shell-monorepo/tree/main/packages/core)
-(source snapshot `de486033`), exposed as a local source package for Vite.
+## Pending checks
 
-- `JigsawSceneModule` registers puzzle state, graphics resources, drag and animation operators, and the scene itself through `@Module`.
-- Browser host element and HUD callbacks are explicit bootstrap provider tokens.
-- `ThreeApplication.create()` initializes providers, starts the fixed-step runtime, and handles reverse-order lifecycle cleanup on unmount/restart.
-- React StrictMode's asynchronous mount/unmount is guarded against stale bootstraps.
-- Puzzle mechanics and renderer behavior are unchanged.
+- Run CI and browser smoke tests with dependencies installed.
+- Verify high-piece-count portrait usability.
+- Add keyboard/non-drag placement alternatives and robust focus-trapped dialogs.
+- Add full in-progress restoration, accessible motion/audio refinements and a real creator donation URL.
 
-The core is independent of Three.js and React. The local copy deliberately uses TypeScript source exports instead of the monorepo's compiled `dist` exports so Vite can consume it without an extra build step.
+## References
 
-## Validation
-
-`npm test` uses Node's built-in test runner and works without downloaded packages. UI/Three.js compilation and browser rendering require dependencies and should be tested locally after `npm install`.
-
-## Provenance
-
-The original game was a clean-room focused port. This integration copies the upstream ThreeShell core source and wires its DI/lifecycle into the game:
-- https://github.com/wind198/tutorial__jigsaw-animation
 - https://github.com/wind198/three-shell-monorepo
+- https://github.com/wind198/tutorial__jigsaw-animation
