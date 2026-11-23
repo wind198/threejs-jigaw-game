@@ -1,4 +1,4 @@
-# Little Jigsaw 3D — Three.js + ThreeShell-style runtime
+# Little Jigsaw 3D — Three.js + ThreeShell core runtime
 
 A migration of [tutorial__jigsaw-animation](https://github.com/wind198/tutorial__jigsaw-animation) into a **real 3D tabletop puzzle** with a **fixed, straight-down orthographic camera**. It retains the original 3×3, one-target-per-piece gameplay, seeded puzzle shapes, snap tolerance, return-to-tray behavior, and replay.
 
@@ -31,21 +31,24 @@ src/scene/operators/drag.operator.ts # pointer raycasting -> command queue
 src/scene/operators/animation.operator.ts # deterministic snap/drop animations
 src/scene/state/puzzle-store.ts      # state + mesh registry
 src/ui/JigsawGame.tsx                # React host/HUD/replay
-vendor/three-shell-core/            # embedded minimal fixed-step runtime adapter
+packages/core/                     # upstream ThreeShell core source (DI, lifecycle, fixed-step runtime)
 ```
 
 **Coordinate contract:** `x` points right, `z` points down the board, `y` points upward. The existing 2D-style puzzle geometry `(x,y)` maps to `(x-3, 0, y-3)` in the scene, centered on a 6 × 6 board. Piece mesh shape vertices are oriented with `rotation.x = -PI/2`. The camera is at `(0,18,0)` with `up=(0,0,-1)` and no orbit controls.
 
-## Integration with the upstream ThreeShell monorepo
+## ThreeShell core integration
 
-This zip is **a standalone port**, not a byte-for-byte checkout of either upstream repository. Network restrictions prevented cloning and installing packages in the authoring environment. The included `vendor/three-shell-core` is a **small source-compatible subset** of the fixed-step `ThreeShell`/`SimulationRuntime`/`ThreeApplication` interfaces used here. It does **not** include upstream module decorators, constructor DI, auto discovery, or the Next.js adapter. `jigsaw.module.ts` is a composition descriptor, not an upstream decorated `@Module`.
+The application embeds the real `packages/core/src` from
+[three-shell-monorepo](https://github.com/wind198/three-shell-monorepo/tree/main/packages/core)
+(source snapshot `de486033`), exposed as a local source package for Vite.
 
-To integrate into [three-shell-monorepo](https://github.com/wind198/three-shell-monorepo):
-1. Move `src/scene`, `src/domain` and `src/ui` into an application under `apps/`.
-2. Replace the local vendor dependency with `@three-shell/core: workspace:*`.
-3. Adapt `JigsawScene` to upstream `ThreeApplication.create()` and `@Module` constructor providers; inject the host element and HUD callbacks through explicit tokens in `jigsaw.mount.ts`.
-4. Reuse `@three-shell/next` auto registry and its generated `<SceneView scene="jigsaw" />` to mount the scene in Next.js.
-5. Replace the simplified edge profile in `src/domain/puzzle.ts` with the full upstream `features/jigsaw/geometry` module if exact legacy contour/preset parity is required. The current generator preserves seeded complementary edges but intentionally implements a lighter default profile.
+- `JigsawSceneModule` registers puzzle state, graphics resources, drag and animation operators, and the scene itself through `@Module`.
+- Browser host element and HUD callbacks are explicit bootstrap provider tokens.
+- `ThreeApplication.create()` initializes providers, starts the fixed-step runtime, and handles reverse-order lifecycle cleanup on unmount/restart.
+- React StrictMode's asynchronous mount/unmount is guarded against stale bootstraps.
+- Puzzle mechanics and renderer behavior are unchanged.
+
+The core is independent of Three.js and React. The local copy deliberately uses TypeScript source exports instead of the monorepo's compiled `dist` exports so Vite can consume it without an extra build step.
 
 ## Validation
 
@@ -53,6 +56,6 @@ To integrate into [three-shell-monorepo](https://github.com/wind198/three-shell-
 
 ## Provenance
 
-This is a clean-room focused port informed by the two public repositories:
+The original game was a clean-room focused port. This integration copies the upstream ThreeShell core source and wires its DI/lifecycle into the game:
 - https://github.com/wind198/tutorial__jigsaw-animation
 - https://github.com/wind198/three-shell-monorepo

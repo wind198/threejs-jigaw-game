@@ -17,5 +17,5 @@ export class AnimationOperator{
       this.motions.splice(i,1);
     }
   }}
-  clear(){this.motions=[]}
+  onSceneDestroy(){this.motions=[]}
 }
