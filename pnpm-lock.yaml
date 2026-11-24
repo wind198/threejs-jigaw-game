@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      howler:
+        specifier: 2.2.4
+        version: 2.2.4
       '@three-shell/core':
         specifier: file:./packages/core
         version: file:packages/core
@@ -33,6 +36,9 @@ importers:
         specifier: ^5.0.8
         version: 5.1.0(@types/react@19.3.0)(react@19.3.1)
     devDependencies:
+      '@types/howler':
+        specifier: 2.2.12
+        version: 2.2.12
       '@clack/prompts':
         specifier: ^0.11.0
         version: 0.11.0
@@ -68,6 +74,12 @@ importers:
         version: 4.6.7
 
 packages:
+
+  howler@2.2.4:
+    resolution: {tarball: https://registry.npmjs.org/howler/-/howler-2.2.4.tgz}
+
+  '@types/howler@2.2.12':
+    resolution: {tarball: https://registry.npmjs.org/@types/howler/-/howler-2.2.12.tgz}
 
   '@clack/core@0.5.0':
     resolution: {integrity: sha512-p3y0FIOwaYRUPRcMO7+dlmLh8PSRcrjuTndsiA0WAFbWES0mLZlrjVoBRZ9DzkPFJZG6KGkJmoEAY0ZcVWTkow==}
@@ -769,6 +781,10 @@ packages:
         optional: true
 
 snapshots:
+
+  howler@2.2.4: {}
+
+  '@types/howler@2.2.12': {}
 
   '@clack/core@0.5.0':
     dependencies:

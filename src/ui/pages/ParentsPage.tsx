@@ -26,7 +26,8 @@ export function ParentsPage({ preferences, onChange }: { preferences: Preference
           <option value="growing">Growing — {PIECES_PER_SIDE.growing ** 2} pieces</option>
           <option value="explorer">Explorer — {PIECES_PER_SIDE.explorer ** 2} pieces</option>
         </select></label>
-        {([['hintsEnabled', 'Show friendly hints'], ['soundEnabled', 'Play sound effects'], ['animationsEnabled', 'Enable celebrations and motion']] as const).map(([key,label])=><label key={key} className="toggle-row"><input type="checkbox" checked={preferences[key]} onChange={e => onChange({ ...preferences, [key]:e.target.checked })}/>{label}</label>)}
+        {([['hintsEnabled', 'Show friendly hints'], ['soundEnabled', 'Enable all audio'], ['musicEnabled', 'Background music'], ['effectsEnabled', 'Sound effects'], ['animationsEnabled', 'Enable celebrations and motion']] as const).map(([key,label])=><label key={key} className="toggle-row"><input type="checkbox" checked={preferences[key]} onChange={e => onChange({ ...preferences, [key]:e.target.checked })}/>{label}</label>)}
+        {([['musicVolume','Music volume'],['effectsVolume','Effects volume']] as const).map(([key,label])=><label key={key} className="settings-field">{label}<input type="range" min={0} max={1} step={.05} value={preferences[key]} onChange={e=>onChange({...preferences,[key]:Number(e.target.value)})}/></label>)}
       </section>
       <section className="parents-panel"><h2><Heart size={23}/> Keep Little Jigsaw free</h2><p>Every puzzle is free forever. If you enjoy our little project, adults can optionally support future artwork and improvements.</p>
         <a className="story-button story-button--secondary" href="https://www.buymeacoffee.com/" target="_blank" rel="noopener noreferrer"><Coffee size={18}/> About Buy Me a Coffee <ExternalLink size={16} aria-hidden/></a>

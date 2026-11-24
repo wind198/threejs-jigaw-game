@@ -11,6 +11,8 @@ import { IconButton } from './design-system/IconButton';
 import { StoryButton } from './components/StoryButton';
 import { CompletionDialog } from './components/CompletionDialog';
 import { LeaveDialog } from './components/LeaveDialog';
+import { useGameAudio } from '../audio/audio.provider';
+import { useGamePreferences } from '../state/preferences';
 import { useMediaQuery } from 'usehooks-ts';
 
 export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle: Puzzle; preferences: Preferences; onComplete: () => void; nextId: string; completedCount: number }) {
@@ -23,9 +25,11 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
   const animateRef=useRef(animate);animateRef.current=animate;
   const [game,setGame] = useState(0);
   const [showHint,setShowHint] = useState(false);
-  const [muted,setMuted] = useState(!preferences.soundEnabled);
+  const muted = !preferences.soundEnabled;
+  const {setPreferences}=useGamePreferences();
+  const audio=useGameAudio();
+  const audioRef=useRef(audio); audioRef.current=audio;
   const [status,setStatus] = useState<'loading'|'ready'|'error'>('loading');
-  const mutedRef = useRef(muted); mutedRef.current = muted;
   const callback = useRef(onComplete); callback.current = onComplete;
   const size = PIECES_PER_SIDE[preferences.difficulty], pieces = size * size;
   useEffect(() => {
@@ -39,8 +43,8 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
         const created = await ThreeApplication.create(JigsawSceneModule,JigsawScene,[
           {provide:JIGSAW_CONFIG,useValue:{size,image:puzzle.image,animationsEnabled:()=>animateRef.current,onError:fail}},
           {provide:JIGSAW_CONTAINER,useValue:element},
-          {provide:JIGSAW_PROGRESS,useValue:(n:number)=>{if(cancelled)return;setCount(n);if(n>0&&!mutedRef.current){const sound=new Audio('/assets/audio/piece-snap.wav');sound.volume=.25;void sound.play().catch(()=>{});}}},
-          {provide:JIGSAW_COMPLETE,useValue:()=>{if(!cancelled){setComplete(true);callback.current();}}},
+          {provide:JIGSAW_PROGRESS,useValue:(n:number)=>{if(cancelled)return;setCount(n);if(n>0)audioRef.current.snap(););}}},
+          {provide:JIGSAW_COMPLETE,useValue:()=>{if(!cancelled){setComplete(true);audioRef.current.complete();callback.current();}}},
         ]);
         if(cancelled){await created.dispose();return;}
         runtime=created;created.start();setStatus('ready');
@@ -48,14 +52,14 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     })();
     return ()=>{cancelled=true;if(runtime)void runtime.dispose();};
   },[game,size,puzzle.image]);
-  function restart(){setComplete(false);setCount(0);setShowHint(false);setStatus('loading');setGame(n=>n+1);}
+  function restart(){audioRef.current.reset();setComplete(false);setCount(0);setShowHint(false);setStatus('loading');setGame(n=>n+1);}
   return <div className="game-shell playroom">
     <header className="playroom-header">
       <Link href="/puzzles/" className="icon-button" aria-label="Back to puzzles" onClick={e=>{if(count>0&&!complete){e.preventDefault();setLeaving(true);}}}><ArrowLeft aria-hidden/></Link>
       <div className="playroom-heading"><h1>{puzzle.title}</h1></div>
       <div className="playroom-actions">
         {preferences.hintsEnabled&&<IconButton aria-label={showHint?'Hide picture guide':'Show picture guide'} aria-pressed={showHint} onClick={()=>setShowHint(v=>!v)}><Lightbulb aria-hidden/></IconButton>}
-        <IconButton aria-label={muted?'Unmute':'Mute'} aria-pressed={!muted} onClick={()=>setMuted(v=>!v)}>{muted?<VolumeX aria-hidden/>:<Volume2 aria-hidden/>}</IconButton>
+        <IconButton aria-label={muted?'Unmute':'Mute'} aria-pressed={!muted} onClick={()=>setPreferences(old=>({...old,soundEnabled:!old.soundEnabled}))}>{muted?<VolumeX aria-hidden/>:<Volume2 aria-hidden/>}</IconButton>
       </div>
     </header>
     <progress className="playroom-progress-line" value={count} max={pieces} aria-label="Puzzle progress"/>
