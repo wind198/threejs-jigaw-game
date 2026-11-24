@@ -1,13 +1,14 @@
 import * as THREE from 'three';
+import { MIN_PICKUP_Y, PICKUP_CLEARANCE, PIECE_DEPTH, PIECE_BEVEL } from '../geometry/piece-dimensions';
 import { shouldSnap } from '../../domain/puzzle';
 import type { PuzzleStore, PieceRuntime } from '../state/puzzle-store';
 import type { SceneResources } from '../resources/scene-resources';
-type Command = { type:'start'; id:number } | { type:'move'; position:THREE.Vector3 } | { type:'end'; cancel?:boolean };
+type Command = { type:'start'; id:number; liftY:number } | { type:'move'; position:THREE.Vector3 } | { type:'end'; cancel?:boolean };
 /** Pointer capture supports drag and tap-to-place. Raycasting selects the nearest (topmost) resting piece. */
 export class DragOperator {
   private readonly ray = new THREE.Raycaster();
   private readonly cursor = new THREE.Vector2();
-  private readonly plane = new THREE.Plane(new THREE.Vector3(0,1,0),-6);
+  private readonly plane = new THREE.Plane(new THREE.Vector3(0,1,0),0);
   private readonly commands: Command[] = [];
   private readonly offset = new THREE.Vector3();
   private readonly canvas: HTMLCanvasElement;
@@ -15,6 +16,7 @@ export class DragOperator {
   private selected: number | null = null;
   private origin = {x:0,y:0};
   private moved = false;
+  private liftY = MIN_PICKUP_Y;
   private placing = false;
   private readonly down = (e:PointerEvent) => this.pointerDown(e);
   private readonly move = (e:PointerEvent) => this.pointerMove(e);
@@ -43,8 +45,9 @@ export class DragOperator {
       if(!hits.length)return;
       const id=hits[0].object.userData.pieceId as number;
       this.selected=id;
+      this.liftY=Math.max(MIN_PICKUP_Y,...this.store.pieces.filter(p=>p.definition.id!==id).map(p=>p.mesh.position.y+PIECE_DEPTH+2*PIECE_BEVEL+PICKUP_CLEARANCE));
       this.offset.copy(this.store.pieces[id].mesh.position).sub(pos); this.offset.y=0;
-      this.commands.push({type:'start',id});
+      this.commands.push({type:'start',id,liftY:this.liftY});
     } else { this.offset.set(0,0,0); }
     this.pointerId=e.pointerId; this.origin={x:e.clientX,y:e.clientY}; this.moved=false;
     this.canvas.setPointerCapture(e.pointerId); e.preventDefault();
@@ -54,14 +57,14 @@ export class DragOperator {
     if(Math.hypot(e.clientX-this.origin.x,e.clientY-this.origin.y)>6)this.moved=true;
     if(!this.moved && !this.placing)return;
     const pos=this.onPlane(e); if(!pos)return;
-    pos.add(this.offset); pos.y=6; this.commands.push({type:'move',position:pos});
+    pos.add(this.offset); pos.y=this.liftY; this.commands.push({type:'move',position:pos});
   }
   private pointerUp(e:PointerEvent,cancel:boolean) {
     if(this.pointerId!==e.pointerId)return;
     this.pointerId=null;
     if(this.canvas.hasPointerCapture(e.pointerId))this.canvas.releasePointerCapture(e.pointerId);
     if(!cancel && !this.moved && !this.placing && Math.hypot(e.clientX-this.origin.x,e.clientY-this.origin.y)<=6)return;
-    if(!cancel){const pos=this.onPlane(e);if(pos){pos.add(this.offset);pos.y=6;this.commands.push({type:'move',position:pos});}}
+    if(!cancel){const pos=this.onPlane(e);if(pos){pos.add(this.offset);pos.y=this.liftY;this.commands.push({type:'move',position:pos});}}
     this.selected=null;this.commands.push({type:'end',cancel});
   }
   process() {
@@ -69,7 +72,7 @@ export class DragOperator {
       if(cmd.type==='start'){
         if(this.store.active!==null || this.store.session.getState(cmd.id)!=='resting')continue;
         this.store.active=cmd.id;this.store.session.transition(cmd.id,'dragging');
-        this.store.pieces[cmd.id].mesh.position.y=6;
+        this.store.pieces[cmd.id].mesh.position.y=cmd.liftY;
       }
       if(cmd.type==='move' && this.store.active!==null)this.store.pieces[this.store.active].mesh.position.copy(cmd.position);
       if(cmd.type==='end' && this.store.active!==null){

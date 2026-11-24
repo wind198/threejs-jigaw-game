@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { PIECE_DEPTH, PIECE_BEVEL, LOCKED_Y } from './piece-dimensions';
 import type {PieceDefinition} from '../../domain/puzzle';
 /** Converts 2D board coordinates to extruded XZ meshes, normal facing +Y. */
 export function createPieceMesh(piece:PieceDefinition,texture:THREE.Texture):THREE.Mesh{
@@ -7,7 +8,7 @@ export function createPieceMesh(piece:PieceDefinition,texture:THREE.Texture):THR
   for(const seg of outline){if(seg.kind==='line')shape.lineTo(seg.p1.x-3,3-seg.p1.y);
     else shape.bezierCurveTo(seg.p1.x-3,3-seg.p1.y,seg.p2.x-3,3-seg.p2.y,seg.p3.x-3,3-seg.p3.y);
   }shape.closePath();
-  const geometry=new THREE.ExtrudeGeometry(shape,{depth:.16,bevelEnabled:true,bevelThickness:.018,bevelSize:.014,bevelSegments:2,curveSegments:12,steps:1});
+  const geometry=new THREE.ExtrudeGeometry(shape,{depth:PIECE_DEPTH,bevelEnabled:true,bevelThickness:PIECE_BEVEL,bevelSize:.014,bevelSegments:2,curveSegments:12,steps:1});
   // ExtrudeGeometry's generated UVs reference shape coordinates. Normalize across shared board image.
   const pos=geometry.attributes.position;const uv=geometry.attributes.uv;
   for(let i=0;i<pos.count;i++){
@@ -19,7 +20,7 @@ export function createPieceMesh(piece:PieceDefinition,texture:THREE.Texture):THR
   const mesh=new THREE.Mesh(geometry,[face,edge]);
   geometry.translate(-(piece.target.x-3),-(3-piece.target.y),0);
   mesh.rotation.x=-Math.PI/2;
-  mesh.position.set(piece.target.x-3,.14,piece.target.y-3);
+  mesh.position.set(piece.target.x-3,LOCKED_Y,piece.target.y-3);
   mesh.castShadow=true;mesh.receiveShadow=true;mesh.userData.pieceId=piece.id;
   return mesh;
 }

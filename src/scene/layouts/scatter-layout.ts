@@ -1,4 +1,6 @@
 import { pieceRadius, type PlayroomLayout, type Slot, type Tray } from './playroom-layout';
+import { settleStack } from './stack-layout';
+import { RESTING_Y } from '../geometry/piece-dimensions';
 function random(seed:number) {
   let state=seed>>>0;
   return ()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
@@ -21,7 +23,7 @@ function scatterTray(tray:Tray,count:number,r:number,rand:()=>number):Slot[] {
     const jitter=(step:number)=>Math.min(r*.12,step*.10)*(rand()*2-1);
     const x=Math.max(-spanX/2,Math.min(spanX/2,(col-(rowCount-1)/2)*dx+jitter(dx)));
     const z=Math.max(-spanZ/2,Math.min(spanZ/2,(row-(rows-1)/2)*dz+jitter(dz)));
-    return {x:tray.x+x,z:tray.z+z,y:.09};
+    return {x:tray.x+x,z:tray.z+z,y:RESTING_Y};
   });
 }
 export function scatterPieces(layout:PlayroomLayout,size:number,ids:readonly number[],seed:number):Map<number,Slot> {
@@ -32,7 +34,7 @@ export function scatterPieces(layout:PlayroomLayout,size:number,ids:readonly num
   for(let i=0;i<layout.trays.length;i++){
     const count=Math.ceil((order.length-offset)/(layout.trays.length-i));
     const slots=scatterTray(layout.trays[i],count,r,rand);
-    slots.forEach((slot,j)=>result.set(order[offset+j],{...slot,y:.09+(offset+j)*.20}));
+    settleStack(slots,r).forEach((slot,j)=>result.set(order[offset+j],slot));
     offset+=count;
   }
   return result;
