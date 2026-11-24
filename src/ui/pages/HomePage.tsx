@@ -15,8 +15,8 @@ export function HomePage() {
       <section className="storybook-hero" aria-labelledby="hero-title">
         <div className="storybook-hero-copy">
           <p className="storybook-kicker"><Sparkles size={18} aria-hidden/> A little world of wonder</p>
-          <h1 id="hero-title">Little pieces.<br/><em>Big adventures.</em></h1>
-          <p className="storybook-lead">Discover magical pictures and put them together, one happy piece at a time.</p>
+          <h1 id="hero-title">Free jigsaw puzzles<br/><em>for kids.</em></h1>
+          <p className="storybook-lead">Little pieces. Big adventures. Play online with 4, 9 or 25 pieces.</p>
           <Link href="/puzzles/" className="story-button story-button--primary storybook-cta">Let's play <ArrowRight size={22} aria-hidden/></Link>
           <p className="storybook-note">Always free. No ads. No accounts.</p>
         </div>

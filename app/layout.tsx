@@ -7,13 +7,15 @@ import '../src/ui/styles/library.css';
 import '../src/ui/styles/playroom.css';
 import '../src/ui/styles/dialogs.css';
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+import { SITE_NAME, SITE_DESCRIPTION, siteUrl } from '../src/seo/site';
+import '../src/ui/styles/puzzle-landing.css';
 export const metadata: Metadata = {
-  ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
-  title: { default: 'Little Jigsaw 3D — Free Puzzles for Kids', template: '%s | Little Jigsaw 3D' },
-  description: 'Play free, gentle 3D jigsaw puzzles for kids aged 3–10. No account, ads or payments required.',
-  applicationName: 'Little Jigsaw 3D',
-  robots: { index: true, follow: true },
+  ...(siteUrl ? { metadataBase: siteUrl } : {}),
+  title: { default: 'Free Online Jigsaw Puzzles for Kids | Little Jigsaw 3D', template: '%s | Little Jigsaw 3D' },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  robots: { index: Boolean(siteUrl), follow: Boolean(siteUrl) },
+  icons: { icon: [{url:'/favicon.png',type:'image/png',sizes:'96x96'}] },
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="en"><body><GameAudioProvider>{children}</GameAudioProvider></body></html>;

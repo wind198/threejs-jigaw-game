@@ -10,7 +10,7 @@ export function LibraryPage({ category = 'All' }: { category?: 'All' | PuzzleCat
   return <div className="site-page library-page storybook-library">
     <SiteHeader active="puzzles"/>
     <main className="storybook-library-main" id="main-content">
-      <header className="library-heading"><p className="storybook-kicker">Your next adventure</p><h1>{collection?.title ?? 'Choose a picture'}</h1><p>{collection?.description ?? 'Which little world shall we put together today?'}</p></header>
+      <header className="library-heading"><p className="storybook-kicker">Your next adventure</p><h1>{collection ? collection.category + ' jigsaw puzzles' : 'Free online jigsaw puzzles'}</h1><p>{collection ? collection.title + ' — ' + collection.description : 'Choose a picture and play a free puzzle today.'}</p></header>
       <LibraryNavigation category={category}/>
       <LibraryGrid key={category} puzzles={matches}/>
     </main>

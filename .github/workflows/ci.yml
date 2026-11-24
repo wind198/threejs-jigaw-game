@@ -28,14 +28,16 @@ jobs:
           test -f output/prompts/animals/farm-animals--easy.txt
           test -f output/prompts/manifest.json
       - name: Typecheck and production build
+        env:
+          NEXT_PUBLIC_SITE_URL: https://seo-ci.invalid
         run: npm run build
       - name: Verify prerendered SEO pages
         run: |
           test -f out/index.html
           test -f out/puzzles/index.html
           for category in animals nature space vehicles; do test -f "out/puzzles/$category/index.html"; done
-          grep -q 'Little pieces' out/index.html
-          grep -q 'Animal friends' out/puzzles/animals/index.html
+          grep -q 'Free jigsaw puzzles' out/index.html
+          grep -q 'Animals jigsaw puzzles' out/puzzles/animals/index.html
           test -f out/play/sunny-valley/index.html
           test -f out/play/forest-friends/index.html
           test -f out/play/moon-adventure/index.html
@@ -43,3 +45,7 @@ jobs:
           test -f out/assets/puzzle-images/animals/arctic-fox-snow--medium.avif
           test -f out/robots.txt
           grep -q 'Forest Friends' out/play/forest-friends/index.html
+      - name: Verify SEO export
+        env:
+          NEXT_PUBLIC_SITE_URL: https://seo-ci.invalid
+        run: node --import tsx scripts/verify-seo.mjs
