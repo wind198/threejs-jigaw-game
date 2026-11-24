@@ -1,79 +1,87 @@
 {
-  "repository": "https://github.com/S3M1TR4SH/asset-library",
-  "ref": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
-  "licenseEvidence": "https://github.com/S3M1TR4SH/asset-library/blob/d93498e585d33ca7d30d6881e4a29cb44a80d155/LICENSES.md",
+  "note": "Lab candidates: toddler-friendly home/activity loops + exciting clear win + wooden board snap. Production music/success remain null until listening approval; production snap points at wood mp3s.",
   "assets": [
     {
-      "id": "home",
-      "title": "A Place I Call Home",
+      "id": "browse",
+      "title": "Children's Game Music 3 - Home",
       "role": "browsing",
-      "author": "Juhani Junkala",
-      "source": "https://opengameart.org/content/jrpg-pack-4-calm",
+      "author": "heartade",
+      "source": "https://opengameart.org/content/childrens-game-music-3-home",
       "license": "CC0 1.0",
-      "local": "/assets/audio/candidates/home.mp3",
-      "upstreamPath": "audio/music/juhani-junkala/a_place_i_call_home.mp3",
-      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
-      "gitBlob": "157c17e5c752c2e5d7e6c813ca2763044285ffb2"
+      "local": "/assets/audio/candidates/browse.mp3",
+      "upstreamFile": "children_soundtrack_3.wav",
+      "sha256": "05e9ab28a6ff8e35bc467fca7c7d11aafb7c7187b5f1506c4d2aca8db4efe067"
     },
     {
-      "id": "peaceful",
-      "title": "Peaceful Days",
+      "id": "play",
+      "title": "Children's Game Music 4 - Activity",
       "role": "gameplay",
-      "author": "Juhani Junkala",
-      "source": "https://opengameart.org/content/jrpg-pack-4-calm",
+      "author": "heartade",
+      "source": "https://opengameart.org/content/childrens-game-music-4-activity",
       "license": "CC0 1.0",
-      "local": "/assets/audio/candidates/peaceful.mp3",
-      "upstreamPath": "audio/music/juhani-junkala/peaceful_days.mp3",
-      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
-      "gitBlob": "f1dbbd363f6f67031163eda5af12f57ebf1db29f"
+      "local": "/assets/audio/candidates/play.mp3",
+      "upstreamFile": "children_soundtrack_4.wav",
+      "sha256": "f628d17e547bf096698a1077fd8f9b8cbf1b2a5e5a42f4b9dc3b36b57e86f8e1"
     },
     {
-      "id": "click",
-      "title": "Click",
-      "role": "snap",
-      "author": "Kenney",
-      "source": "https://kenney.nl/assets/interface-sounds",
+      "id": "clear-jingle",
+      "title": "Cozy Puzzle Clear (Jingle)",
+      "role": "success",
+      "author": "MintoDog",
+      "source": "https://opengameart.org/content/cozy-puzzle-jingle-result",
       "license": "CC0 1.0",
-      "local": "/assets/audio/candidates/click.mp3",
-      "upstreamPath": "audio/sfx/kenney-interface-sounds/click.mp3",
-      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
-      "gitBlob": "f405cb7fd97bac16e1a68fc8fea82b440a91dbd6"
+      "local": "/assets/audio/candidates/clear-jingle.mp3",
+      "upstreamFile": "Cozy Puzzle Clear (Jingle).mp3",
+      "sha256": "91bf349850b5b6d737bb3b65d2625fd284496d3d4472c49bdbe3826d4f0adfef"
     },
     {
-      "id": "place",
-      "title": "Place",
-      "role": "snap",
-      "author": "Kenney",
-      "source": "https://kenney.nl/assets/interface-sounds",
-      "license": "CC0 1.0",
-      "local": "/assets/audio/candidates/place.mp3",
-      "upstreamPath": "audio/sfx/kenney-interface-sounds/place.mp3",
-      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
-      "gitBlob": "24a4bb2ce361016a567ad7e82386750fdadbb1ae"
-    },
-    {
-      "id": "pizzicato",
-      "title": "Pizzicato",
+      "id": "nes-jingle",
+      "title": "NES jingle",
       "role": "success",
       "author": "Kenney",
       "source": "https://kenney.nl/assets/music-jingles",
       "license": "CC0 1.0",
-      "local": "/assets/audio/candidates/pizzicato.mp3",
-      "upstreamPath": "audio/music/kenney-music-jingles/pizzicato.mp3",
-      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
-      "gitBlob": "f41a49aa76fa569839a8774ad9b53bdb211bcf71"
+      "local": "/assets/audio/candidates/nes-jingle.mp3",
+      "sha256": "773a1fda22a6262072603c187cd5a1c6d7e5b41650464e8c0b03c3335ede5bed"
+    },
+    {
+      "id": "wood-light-0",
+      "role": "snap",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/impact-sounds",
+      "license": "CC0 1.0",
+      "local": "/assets/audio/candidates/wood-light-0.mp3",
+      "sha256": "e359eba252248551e5b67c5a4810cac09c10bc2f0eb94ce0713faea4c14e26be"
+    },
+    {
+      "id": "wood-light-1",
+      "role": "snap",
+      "local": "/assets/audio/candidates/wood-light-1.mp3",
+      "sha256": "35393211fb68d90f63ff0a5faf10ba9aa549ff5ca4a548cdf6dc2f1c713a8002"
+    },
+    {
+      "id": "wood-medium-0",
+      "role": "snap",
+      "local": "/assets/audio/candidates/wood-medium-0.mp3",
+      "sha256": "f5ce5772a0414fd63e3a7f687c85d805d6e186e3eba3b5386a7876540ccad3fa"
+    },
+    {
+      "id": "wood-medium-1",
+      "role": "snap",
+      "local": "/assets/audio/candidates/wood-medium-1.mp3",
+      "sha256": "366eaf32c427e63a96efd48d28c127430363cb6fe88ef672e70232c8d5651731"
     },
     {
       "id": "win",
-      "title": "Win",
       "role": "success",
-      "author": "Kenney",
-      "source": "https://kenney.nl/assets/interface-sounds",
-      "license": "CC0 1.0",
       "local": "/assets/audio/candidates/win.mp3",
-      "upstreamPath": "audio/sfx/kenney-interface-sounds/win.mp3",
-      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
-      "gitBlob": "4a88a8fb09f8e75ddc16eb47a6594f970f949eba"
+      "sha256": "dfa73bfad0629bb71589cc018a0a965e5696a45f4529c07e5b27b0faef5e3a82"
+    },
+    {
+      "id": "pizzicato",
+      "role": "success",
+      "local": "/assets/audio/candidates/pizzicato.mp3",
+      "sha256": "46ca0121d7e1b24d14d88573bf6f0835a94f633bce454147559c249ef1e912c6"
     }
   ]
 }

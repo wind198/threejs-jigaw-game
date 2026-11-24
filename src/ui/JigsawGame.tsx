@@ -43,7 +43,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
         const created = await ThreeApplication.create(JigsawSceneModule,JigsawScene,[
           {provide:JIGSAW_CONFIG,useValue:{size,image:puzzle.image,animationsEnabled:()=>animateRef.current,onError:fail}},
           {provide:JIGSAW_CONTAINER,useValue:element},
-          {provide:JIGSAW_PROGRESS,useValue:(n:number)=>{if(cancelled)return;setCount(n);if(n>0)audioRef.current.snap(););}}},
+          {provide:JIGSAW_PROGRESS,useValue:(n:number)=>{if(cancelled)return;setCount(n);if(n>0)audioRef.current.snap();}},
           {provide:JIGSAW_COMPLETE,useValue:()=>{if(!cancelled){setComplete(true);audioRef.current.complete();callback.current();}}},
         ]);
         if(cancelled){await created.dispose();return;}
