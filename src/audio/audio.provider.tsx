@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useRef, type ReactNode } from 're
 import { usePathname } from 'next/navigation';
 import { useGamePreferences } from '../state/preferences';
 import { GameAudioEngine } from './audio.engine';
+import { prefetchAllAudio } from './audio.prefetch';
 
 type AudioActions = { snap:()=>void; complete:()=>void; reset:()=>void };
 const AudioContext=createContext<AudioActions>({snap:()=>{},complete:()=>{},reset:()=>{}});
@@ -12,6 +13,7 @@ export function GameAudioProvider({children}:{children:ReactNode}){
   const path=usePathname();
   const {preferences}=useGamePreferences();
   useEffect(()=>{
+    prefetchAllAudio();
     const instance=new GameAudioEngine(); engine.current=instance;
     // Apply prefs immediately so the first user gesture can start music.
     instance.configure(preferences.soundEnabled,preferences.musicEnabled,preferences.effectsEnabled,preferences.musicVolume,preferences.effectsVolume);

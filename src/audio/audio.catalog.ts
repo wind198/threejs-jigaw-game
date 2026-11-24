@@ -14,3 +14,14 @@ export const AUDIO_CATALOG: { music: Record<MusicMode, string | null>; snap: rea
   success: '/assets/audio/candidates/clear-jingle.wav',
 };
 export const AUDIO_MIX = { music: .28, snap: .35, success: .7, duck: .2 } as const;
+
+/** Every production audio URL (music + snaps + success). */
+export function allAudioUrls(): string[] {
+  const urls = [
+    AUDIO_CATALOG.music.browsing,
+    AUDIO_CATALOG.music.playing,
+    ...AUDIO_CATALOG.snap,
+    AUDIO_CATALOG.success,
+  ];
+  return [...new Set(urls.filter((u): u is string => typeof u === 'string' && u.length > 0))];
+}

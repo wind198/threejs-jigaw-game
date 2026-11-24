@@ -1,0 +1,8 @@
+# Copied into out/ by next export. Cloudflare Pages + Netlify.
+# Asset paths are stable; rename the file when replacing bytes in place.
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/**
+  Cache-Control: public, max-age=0, must-revalidate

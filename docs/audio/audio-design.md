@@ -5,5 +5,7 @@ Howler owns playback; the root provider maps routes and puzzle callbacks to audi
 ## Asset handoff
 Production catalog (`AUDIO_CATALOG`) enables toddler-friendly browse/play loops (heartade), wooden snap impacts (Kenney), and the exciting clear jingle (MintoDog). `/play/*` uses playing music; other routes use browsing. Puzzle lock → snap; completion → success with music duck. Lab at `/audio-lab/` remains for audition.
 
+Static hosts should honor long-cache headers for `/assets/*` via `public/_headers` / `out/serve.json` (see README). Dev server does not long-cache.
+
 ## Validation
 Run npm test and npm run build. Manual checks: first gesture, mute persistence, parent sliders, repeated snaps, final snap, replay, navigation, hidden tab, failed audio load, mobile Safari/Chrome. No human listening approval claimed.

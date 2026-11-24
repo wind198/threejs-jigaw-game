@@ -18,6 +18,8 @@ npm run build
 
 The static site is emitted to `out/` by `npm run build`, suitable for any static host that serves directory `index.html` files. `next.config.ts` enables `trailingSlash` for that deployment model.
 
+**Production asset caching:** `public/_headers` (Cloudflare Pages / Netlify) and `public/serve.json` (used by `npm start`) set `Cache-Control: public, max-age=31536000, immutable` on `/assets/*` and force revalidation for HTML. `next dev` still uses `max-age=0`. When replacing a cached audio/image file in place, change the filename (or wait for TTL).
+
 ## SEO / Pages
 
 - `/` — Home, indexable
