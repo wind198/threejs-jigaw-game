@@ -16,11 +16,25 @@
 .first-play-choice input:checked+.first-play-tile { background:#e5edda; border-color:var(--color-primary); }
 .first-play-choice input:focus-visible+.first-play-tile { outline:3px solid var(--color-terracotta); outline-offset:3px; }
 .completion-celebration { display:flex; align-items:center; justify-content:center; gap:16px; margin:0 0 12px; }
-.completion-art { max-width:min(220px,32dvh); margin:0 auto 4px; }
+.completion-art { max-width:min(260px,36dvh); margin:0 auto 16px; }
 .completion-art img { width:100%; height:auto; aspect-ratio:1; object-fit:contain; border:4px solid var(--color-parchment); border-radius:var(--radius-md); display:block; }
-.completion-art figcaption { font-size:14px; font-weight:700; margin-top:6px; }
 .celebration-enabled .celebration-star-main { animation:storybook-pop 420ms ease-out both; }
 .celebration-enabled .celebration-star-side { animation:storybook-pop 420ms 100ms ease-out both; }
 @keyframes storybook-pop { from { transform:scale(.75); opacity:.4; } 65% { transform:scale(1.12); opacity:1; } to { transform:scale(1); opacity:1; } }
 @media(prefers-reduced-motion:reduce) { .storybook-dialog * { animation:none!important; transition:none!important; } }
 @media(max-height:440px) and (orientation:landscape) { .storybook-dialog { padding:12px 20px; } .completion-celebration { display:none; } }
+
+/* Child-facing actions: graphic first, words are supporting labels only. */
+.completion-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.completion-action { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; width:100%; min-width:0; min-height:96px; padding:8px 4px; border:1px solid var(--color-border); border-radius:var(--radius-md); color:var(--color-ink); font-family:inherit; font-size:11px; font-weight:700; line-height:1.2; text-decoration:none; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.completion-action svg { width:40px; height:40px; flex:none; }
+.completion-action--library { background:var(--color-parchment); }
+.completion-action--replay { background:#e5edda; }
+.completion-action--next { background:var(--color-primary); border-color:var(--color-primary); color:white; }
+@media(hover:hover) { .completion-action:hover { filter:brightness(.96); } }
+.completion-action:focus-visible { outline:3px solid var(--color-terracotta); outline-offset:3px; }
+.completion-action:active { filter:brightness(.92); }
+@media(max-height:440px) and (orientation:landscape) {
+  .completion-art { max-width:min(220px,28dvh); margin-bottom:8px; }
+  .completion-action { min-height:88px; }
+}
