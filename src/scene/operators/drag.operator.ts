@@ -37,7 +37,7 @@ export class DragOperator {
   }
   private onPlane(e:PointerEvent) { this.rayFrom(e); return this.ray.ray.intersectPlane(this.plane,new THREE.Vector3()); }
   private pointerDown(e:PointerEvent) {
-    if(this.pointerId!==null || e.button!==0) return;
+    if(this.pointerId!==null || e.button!==0 || this.store.session.complete || this.store.pieces.some(p=>['dropping','snapping'].includes(this.store.session.getState(p.definition.id)))) return;
     const pos=this.onPlane(e); if(!pos)return;
     this.placing=this.selected!==null;
     if(!this.placing){
@@ -78,6 +78,7 @@ export class DragOperator {
       if(cmd.type==='end' && this.store.active!==null){
         const id=this.store.active;this.store.active=null;const piece=this.store.pieces[id];
         const lock=!cmd.cancel && shouldSnap({x:piece.mesh.position.x,y:piece.mesh.position.z},{x:piece.target.x,y:piece.target.z},6/this.store.config.size);
+        if(!lock&&!cmd.cancel)this.res.relocateHome(piece);
         this.store.session.transition(id,lock?'snapping':'dropping');this.animate(piece,lock);
       }
     }
