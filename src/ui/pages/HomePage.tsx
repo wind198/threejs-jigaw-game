@@ -21,7 +21,7 @@ export function HomePage() {
       <section className="home-gallery" aria-labelledby="gallery-title">
         <div className="section-heading"><div><span className="eyebrow">Explore together</span><h2 id="gallery-title">Choose your happy place</h2></div><Link href="/puzzles" className="text-link">All puzzles <ArrowRight size={18}/></Link></div>
         <div className="picture-grid">
-          {puzzles.map(p => <Link key={p.id} href={'/play/' + p.id} className="picture-card">
+          {puzzles.slice(0, 6).map(p => <Link key={p.id} href={'/play/' + p.id} className="picture-card">
             <img src={p.image} alt="" loading="lazy"/><strong>{p.title}</strong><span>{p.category}</span>
           </Link>)}
         </div>

@@ -13,6 +13,10 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Sync artwork and verify manifest
+        run: |
+          npm run assets:sync
+          git diff --exit-code -- src/content/generated/puzzle-manifest.ts
       - name: Unit tests
         run: npm test
       - name: Validate image prompt library
@@ -32,5 +36,7 @@ jobs:
           test -f out/play/sunny-valley/index.html
           test -f out/play/forest-friends/index.html
           test -f out/play/moon-adventure/index.html
+          test -f out/play/animals-arctic-fox-snow/index.html
+          test -f out/assets/puzzle-images/animals/arctic-fox-snow--medium.avif
           test -f out/robots.txt
           grep -q 'Forest Friends' out/play/forest-friends/index.html

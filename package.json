@@ -10,7 +10,10 @@
     "typecheck": "tsc --noEmit",
     "test": "node --import tsx --test tests/*.test.mjs",
     "prompts": "tsx scripts/prompt-cli/index.ts",
-    "prompts:validate": "tsx scripts/prompt-cli/index.ts validate"
+    "prompts:validate": "tsx scripts/prompt-cli/index.ts validate",
+    "assets:sync": "node scripts/generate-puzzle-manifest.mjs && node scripts/sync-puzzle-assets.mjs",
+    "predev": "npm run assets:sync",
+    "prebuild": "npm run assets:sync"
   },
   "dependencies": {
     "@three-shell/core": "file:./packages/core",

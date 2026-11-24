@@ -1,6 +1,7 @@
 import { create } from 'zustand';
+import type { PuzzleCategory } from '../content/puzzles';
 interface GameUIState {
-  category: 'All' | 'Animals' | 'Nature' | 'Space';
+  category: 'All' | PuzzleCategory;
   paused: boolean;
   setCategory(category: GameUIState['category']): void;
   setPaused(paused: boolean): void;

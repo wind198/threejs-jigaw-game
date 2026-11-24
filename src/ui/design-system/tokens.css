@@ -1,0 +1,26 @@
+:root {
+  --color-paper: #faf5e8;
+  --color-parchment: #efe5d2;
+  --color-ink: #29483b;
+  --color-muted: #526b56;
+  --color-primary: #3e7855;
+  --color-primary-shadow: #28583b;
+  --color-terracotta: #a44f34;
+  --color-honey: #e9bc64;
+  --color-blue: #749baf;
+  --color-wood: #af8059;
+  --color-lavender: #aca0c7;
+  --color-surface: #fffdf6;
+  --color-border: #d9ceba;
+  --font-display: Georgia, 'Times New Roman', serif;
+  --font-body: ui-rounded, system-ui, sans-serif;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --space-2: 8px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --target-size: 48px;
+  --motion-fast: 160ms;
+  --motion-normal: 240ms;
+}

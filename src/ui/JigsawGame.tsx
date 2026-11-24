@@ -7,6 +7,7 @@ import { JigsawScene } from '../scene/jigsaw.scene';
 import { JigsawSceneModule, JIGSAW_CONFIG, JIGSAW_CONTAINER, JIGSAW_PROGRESS, JIGSAW_COMPLETE } from '../scene/jigsaw.module';
 import type { Puzzle } from '../content/puzzles';
 import { PIECES_PER_SIDE, type Preferences } from '../state/preferences';
+import { IconButton } from './design-system/IconButton';
 import { StoryButton } from './components/StoryButton';
 import { IllustrationIcon } from './components/IllustrationIcon';
 export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle: Puzzle; preferences: Preferences; onComplete: () => void; nextId: string; completedCount: number }) {
@@ -45,9 +46,9 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
       <Link href="/puzzles" className="icon-button" aria-label="Back to puzzles"><ArrowLeft/></Link>
       <div className="game-heading"><span className="eyebrow">A little adventure</span><h1>{puzzle.title}</h1></div>
       <div className="game-actions">
-        {preferences.hintsEnabled && <button className="icon-button" title="Picture hint" aria-label={showHint ? 'Hide picture hint' : 'Show picture hint'} aria-pressed={showHint} onClick={() => setShowHint(v => !v)}><Lightbulb/></button>}
-        <button className="icon-button" title={muted ? 'Unmute' : 'Mute'} aria-label={muted ? 'Unmute' : 'Mute'} onClick={() => setMuted(v => !v)}>{muted ? <VolumeX/> : <Volume2/>}</button>
-        <button className="icon-button" title="Restart puzzle" aria-label="Restart puzzle" onClick={restart}><RefreshCcw/></button>
+        {preferences.hintsEnabled && <IconButton title="Picture hint" aria-label={showHint ? 'Hide picture hint' : 'Show picture hint'} aria-pressed={showHint} onClick={() => setShowHint(v => !v)}><Lightbulb/></IconButton>}
+        <IconButton title={muted ? 'Unmute' : 'Mute'} aria-label={muted ? 'Unmute' : 'Mute'} onClick={() => setMuted(v => !v)}>{muted ? <VolumeX/> : <Volume2/>}</IconButton>
+        <IconButton title="Restart puzzle" aria-label="Restart puzzle" onClick={restart}><RefreshCcw/></IconButton>
       </div>
     </header>
     <main className="game-stage">
