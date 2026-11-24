@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { GameAudioProvider } from '../src/audio/audio.provider';
 import '../src/ui/design-system/tokens.css';
 import '../src/ui/style.css';
 import '../src/ui/styles/storybook.css';
@@ -15,5 +16,5 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><body><GameAudioProvider>{children}</GameAudioProvider></body></html>;
 }
