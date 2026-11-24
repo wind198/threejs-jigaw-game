@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { createPuzzleArtwork } from './puzzle-art';
 import { createPieceMesh } from '../geometry/piece-mesh';
-import { createPlayroomLayout, frameLayout, clampTrayPage, trayPageCount, type PlayroomLayout } from '../layouts/playroom-layout';
+import { createPlayroomLayout, frameLayout, type PlayroomLayout } from '../layouts/playroom-layout';
+import { scatterPieces } from '../layouts/scatter-layout';
 import { PuzzleStore } from '../state/puzzle-store';
 export class SceneResources {
   readonly scene = new THREE.Scene();
@@ -12,11 +13,12 @@ export class SceneResources {
   private resizeObserver: ResizeObserver;
   private layout!: PlayroomLayout;
   private trayMeshes: THREE.Mesh[] = [];
-  private page = 0;
+  private shuffleSeed = 2026;
+  private shufflePending = true;
+  private appliedAspect = 0;
   private dirty = true;
   private aspect = 0;
   private published = '';
-  private remainingSignature = '';
   constructor(readonly container: HTMLElement, readonly store: PuzzleStore) {
     this.artwork = createPuzzleArtwork(store.config.image, store.config.onError);
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -45,15 +47,15 @@ export class SceneResources {
     this.scene.add(mesh); this.objects.push(mesh); return mesh;
   }
   private buildBoard() {
-    this.addBox(6.7, .32, 6.7, 0xad7651, 0, -.20, 0);
-    this.addBox(6.23, .02, 6.23, 0xf7eaca, 0, -.025, 0);
+    this.addBox(6.3, .32, 6.3, 0xad7651, 0, -.20, 0);
+    this.addBox(6.08, .02, 6.08, 0xf7eaca, 0, -.025, 0);
     const n = this.store.config.size;
     for (let i = 1; i < n; i++) {
       const t = -3 + i * (6 / n);
       this.addBox(.012, .007, 6, 0xd4c5a7, t, 0, 0);
       this.addBox(6, .007, .012, 0xd4c5a7, 0, 0, t);
     }
-    for (const [x, z, w, d] of [[-3.24, 0, .19, 6.6], [3.24, 0, .19, 6.6], [0, -3.24, 6.6, .19], [0, 3.24, 6.6, .19]] as const)
+    for (const [x, z, w, d] of [[-3.10, 0, .10, 6.3], [3.10, 0, .10, 6.3], [0, -3.10, 6.3, .10], [0, 3.10, 6.3, .10]] as const)
       this.addBox(w, .24, d, 0xc58c65, x, .03, z);
   }
   private buildPieces() {
@@ -80,12 +82,7 @@ export class SceneResources {
     this.trayMeshes = layout.trays.map(t => this.addBox(t.width,.09,t.depth,0xe0cdb1,t.x,-.22,t.z));
     this.trayMeshes.push(this.addBox(layout.width,.25,layout.depth,0xf7eee3,0,-.46,layout.centerZ));
   }
-  changePage(delta: number) {
-    if (!this.layout || !this.isIdle()) return;
-    const remaining = this.store.pieces.filter(p => this.store.session.getState(p.definition.id) !== 'locked').length;
-    this.page = clampTrayPage(this.page + delta,remaining,this.layout.capacity);
-    this.remainingSignature = '';
-  }
+  shuffle() { this.shuffleSeed++; this.shufflePending = true; }
   private isIdle() {
     return this.store.pieces.every(p => ['resting','locked'].includes(this.store.session.getState(p.definition.id)));
   }
@@ -94,33 +91,30 @@ export class SceneResources {
     if (!this.isIdle()) return;
     if (this.dirty) {
       const next = createPlayroomLayout(this.store.config.size,Math.max(.01,this.aspect));
-      if (!this.layout || next.mode !== this.layout.mode) {
-        this.layout = next; this.page = 0; this.rebuildTrays(next); this.remainingSignature = '';
+      if (!this.layout || Math.abs(this.appliedAspect-this.aspect)>0.0001) {
+        this.layout=next; this.appliedAspect=this.aspect; this.rebuildTrays(next); this.shufflePending=true;
       }
       const frame = frameLayout(this.layout,Math.max(.01,this.aspect));
-      this.camera.position.set(0,18,frame.centerZ); this.camera.lookAt(0,0,frame.centerZ);
+      this.camera.position.set(0,30,frame.centerZ); this.camera.lookAt(0,0,frame.centerZ);
       this.camera.left = -frame.width/2; this.camera.right = frame.width/2;
       this.camera.top = frame.height/2; this.camera.bottom = -frame.height/2;
       this.camera.updateProjectionMatrix(); this.camera.updateMatrixWorld();
       this.dirty = false;
     }
     if (!this.layout) return;
-    const remaining = this.store.pieces.filter(p => this.store.session.getState(p.definition.id) === 'resting').sort((a,b) => ((a.definition.id * 17 + 7) % (this.store.pieces.length + 1)) - ((b.definition.id * 17 + 7) % (this.store.pieces.length + 1)));
-    this.page = clampTrayPage(this.page,remaining.length,this.layout.capacity);
-    const signature = this.page + ':' + remaining.map(p=>p.definition.id).join(',');
-    if (signature !== this.remainingSignature) {
-      this.remainingSignature = signature;
-      remaining.forEach((piece,i) => {
-        const slot = this.layout.slots[i-this.page*this.layout.capacity];
-        piece.mesh.visible = Boolean(slot);
-        if (slot) { piece.home.set(slot.x,.09,slot.z); piece.mesh.position.copy(piece.home); }
-      });
+    const remaining=this.store.pieces.filter(p=>this.store.session.getState(p.definition.id)==='resting');
+    if(this.shufflePending){
+      const slots=scatterPieces(this.layout,this.store.config.size,remaining.map(p=>p.definition.id),this.shuffleSeed);
+      for(const piece of remaining){
+        const slot=slots.get(piece.definition.id)!;
+        piece.home.set(slot.x,slot.y,slot.z);
+        piece.mesh.visible=true;piece.mesh.position.copy(piece.home);piece.mesh.updateMatrixWorld(true);
+      }
+      this.shufflePending=false;
     }
-    const pages = trayPageCount(remaining.length,this.layout.capacity);
-    const published = this.layout.mode + ':' + this.page + ':' + pages + ':' + remaining.length;
-    if (published !== this.published) {
-      this.published = published;
-      this.store.callbacks.onTray?.({mode:this.layout.mode,page:this.page,pages,remaining:remaining.length});
+    const published=this.layout.mode+':'+remaining.length;
+    if(published!==this.published){
+      this.published=published;this.store.callbacks.onTray?.({mode:this.layout.mode,remaining:remaining.length});
     }
   }
   onSceneDestroy() {

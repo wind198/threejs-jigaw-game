@@ -3,11 +3,11 @@ import { shouldSnap } from '../../domain/puzzle';
 import type { PuzzleStore, PieceRuntime } from '../state/puzzle-store';
 import type { SceneResources } from '../resources/scene-resources';
 type Command = { type:'start'; id:number } | { type:'move'; position:THREE.Vector3 } | { type:'end'; cancel?:boolean };
-/** Pointer capture supports drag and tap-to-place. Only visible tray pieces are selectable. */
+/** Pointer capture supports drag and tap-to-place. Raycasting selects the nearest (topmost) resting piece. */
 export class DragOperator {
   private readonly ray = new THREE.Raycaster();
   private readonly cursor = new THREE.Vector2();
-  private readonly plane = new THREE.Plane(new THREE.Vector3(0,1,0),-.5);
+  private readonly plane = new THREE.Plane(new THREE.Vector3(0,1,0),-6);
   private readonly commands: Command[] = [];
   private readonly offset = new THREE.Vector3();
   private readonly canvas: HTMLCanvasElement;
@@ -54,14 +54,14 @@ export class DragOperator {
     if(Math.hypot(e.clientX-this.origin.x,e.clientY-this.origin.y)>6)this.moved=true;
     if(!this.moved && !this.placing)return;
     const pos=this.onPlane(e); if(!pos)return;
-    pos.add(this.offset); pos.y=.5; this.commands.push({type:'move',position:pos});
+    pos.add(this.offset); pos.y=6; this.commands.push({type:'move',position:pos});
   }
   private pointerUp(e:PointerEvent,cancel:boolean) {
     if(this.pointerId!==e.pointerId)return;
     this.pointerId=null;
     if(this.canvas.hasPointerCapture(e.pointerId))this.canvas.releasePointerCapture(e.pointerId);
     if(!cancel && !this.moved && !this.placing && Math.hypot(e.clientX-this.origin.x,e.clientY-this.origin.y)<=6)return;
-    if(!cancel){const pos=this.onPlane(e);if(pos){pos.add(this.offset);pos.y=.5;this.commands.push({type:'move',position:pos});}}
+    if(!cancel){const pos=this.onPlane(e);if(pos){pos.add(this.offset);pos.y=6;this.commands.push({type:'move',position:pos});}}
     this.selected=null;this.commands.push({type:'end',cancel});
   }
   clearSelection() {
@@ -73,7 +73,7 @@ export class DragOperator {
       if(cmd.type==='start'){
         if(this.store.active!==null || this.store.session.getState(cmd.id)!=='resting')continue;
         this.store.active=cmd.id;this.store.session.transition(cmd.id,'dragging');
-        this.store.pieces[cmd.id].mesh.position.y=.5;
+        this.store.pieces[cmd.id].mesh.position.y=6;
       }
       if(cmd.type==='move' && this.store.active!==null)this.store.pieces[this.store.active].mesh.position.copy(cmd.position);
       if(cmd.type==='end' && this.store.active!==null){

@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Lightbulb, RefreshCcw, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Shuffle, X, Lightbulb, RefreshCcw, Volume2, VolumeX } from 'lucide-react';
 import { ThreeApplication } from '@three-shell/core';
 import { JigsawScene } from '../scene/jigsaw.scene';
 import { JigsawSceneModule, JIGSAW_CONFIG, JIGSAW_CONTAINER, JIGSAW_PROGRESS, JIGSAW_COMPLETE } from '../scene/jigsaw.module';
@@ -24,7 +24,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
   const [showHint,setShowHint] = useState(false);
   const [muted,setMuted] = useState(!preferences.soundEnabled);
   const [status,setStatus] = useState<'loading'|'ready'|'error'>('loading');
-  const [tray,setTray] = useState<TrayState>({mode:'portrait',page:0,pages:1,remaining:0});
+  const [tray,setTray] = useState<TrayState>({mode:'portrait',remaining:0});
   const mutedRef = useRef(muted); mutedRef.current = muted;
   const callback = useRef(onComplete); callback.current = onComplete;
   const size = PIECES_PER_SIDE[preferences.difficulty], pieces = size * size;
@@ -48,13 +48,13 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     })();
     return ()=>{cancelled=true;resources.current=null;drag.current=null;if(runtime)void runtime.dispose();};
   },[game,size,puzzle.image]);
-  function restart(){setComplete(false);setCount(0);setShowHint(false);setStatus('loading');setTray({mode:'portrait',page:0,pages:1,remaining:0});setGame(n=>n+1);}
-  function changeTray(delta:number){if(drag.current?.clearSelection())return;resources.current?.changePage(delta);}
+  function restart(){setComplete(false);setCount(0);setShowHint(false);setStatus('loading');setTray({mode:'portrait',remaining:0});setGame(n=>n+1);}
+  function shuffle(){drag.current?.clearSelection();resources.current?.shuffle();}
   function confirmRestart(){if(count===0||complete||window.confirm('Start this puzzle again? Your placed pieces will be reset.'))restart();}
   return <div className="game-shell playroom">
     <header className="playroom-header">
       <Link href="/puzzles/" className="icon-button" aria-label="Back to puzzles" onClick={e=>{if(count>0&&!complete&&!window.confirm('Leave this puzzle? Placed pieces will not be saved.'))e.preventDefault();}}><ArrowLeft aria-hidden/></Link>
-      <div className="playroom-heading"><span>{puzzle.category}</span><h1>{puzzle.title}</h1></div>
+      <div className="playroom-heading"><h1>{puzzle.title}</h1></div>
       <div className="playroom-progress"><span aria-live="polite"><IllustrationIcon name="star" size={18} decorative/>{count} / {pieces}</span><progress value={count} max={pieces} aria-label="Puzzle progress"/></div>
     </header>
     <main className="playroom-workspace">
@@ -62,21 +62,17 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
         <div className="scene" ref={host} aria-label="Puzzle board and piece trays"/>
         {status!=='ready'&&<div className="playroom-message" role={status==='error'?'alert':'status'}><h2>{status==='error'?'The puzzle needs a little help':'Getting your puzzle ready'}</h2>{status==='error'&&<><p>Try loading the puzzle again.</p><StoryButton onClick={restart}>Try again</StoryButton><Link href="/puzzles/">Choose another picture</Link></>}</div>}
       </div>
-      {showHint&&<aside className="playroom-hint"><img src={puzzle.image} alt={'Completed picture: '+puzzle.title} width={144} height={144}/><span>Picture guide</span></aside>}
+      {showHint&&<aside className="playroom-hint" aria-label="Picture guide"><img src={puzzle.image} alt={'Completed picture: '+puzzle.title} width={144} height={144}/><IconButton aria-label="Close picture guide" onClick={()=>setShowHint(false)}><X aria-hidden/></IconButton></aside>}
     </main>
     <div className="playroom-controls">
-      <div className="playroom-tray-controls" aria-label="Piece tray">
-        <IconButton aria-label="Previous pieces" disabled={status!=='ready'||tray.page===0} onClick={()=>changeTray(-1)}><ChevronLeft aria-hidden/></IconButton>
-        <div className="playroom-tray-label"><strong>{tray.remaining} pieces left</strong><span>Tray {tray.page+1} of {tray.pages}</span></div>
-        <IconButton aria-label="Next pieces" disabled={status!=='ready'||tray.page+1>=tray.pages} onClick={()=>changeTray(1)}><ChevronRight aria-hidden/></IconButton>
-      </div>
+      <div className="playroom-tray-label"><strong>{status==='ready'?tray.remaining:pieces} left</strong></div>
       <div className="playroom-actions">
+        <IconButton aria-label="Shuffle remaining pieces" title="Shuffle pieces" disabled={status!=='ready'||tray.remaining<2} onClick={shuffle}><Shuffle aria-hidden/></IconButton>
         {preferences.hintsEnabled&&<IconButton aria-label={showHint?'Hide picture guide':'Show picture guide'} aria-pressed={showHint} onClick={()=>setShowHint(v=>!v)}><Lightbulb aria-hidden/></IconButton>}
         <IconButton aria-label={muted?'Unmute':'Mute'} aria-pressed={!muted} onClick={()=>setMuted(v=>!v)}>{muted?<VolumeX aria-hidden/>:<Volume2 aria-hidden/>}</IconButton>
         <IconButton aria-label="Restart puzzle" onClick={confirmRestart}><RefreshCcw aria-hidden/></IconButton>
       </div>
     </div>
-    <footer className="playroom-instruction">Drag a piece, or tap it and then tap its place.</footer>
     {complete&&<div className="modal-backdrop"><section className="modal-card complete-card" role="dialog" aria-modal="true" aria-labelledby="complete-title">
       <IllustrationIcon name="glowing-star" size={72} decorative className="complete-star"/><h2 id="complete-title">Hooray! You did it!</h2>
       <img className="complete-image" src={puzzle.image} alt={puzzle.title}/><p>You finished {puzzle.title}!</p>

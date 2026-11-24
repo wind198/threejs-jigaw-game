@@ -1,33 +1,28 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPlayroomLayout,frameLayout,trayPageCount,clampTrayPage } from '../src/scene/layouts/playroom-layout.ts';
-for(const size of [2,3,5])for(const aspect of [.5,.8,1.19,1.2,1.8,3]){
- test('layout fits size '+size+' at aspect '+aspect,()=>{
-  const layout=createPlayroomLayout(size,aspect),frame=frameLayout(layout,aspect),radius=6/size*.76+.02;
-  assert.equal(layout.mode,aspect<1.2?'portrait':'landscape');
-  assert.ok(frame.width>=layout.width-1e-9);
-  assert.ok(frame.height>=layout.depth-1e-9);
+import { createPlayroomLayout,frameLayout,pieceRadius,BOARD_HALF } from '../src/scene/layouts/playroom-layout.ts';
+import { scatterPieces } from '../src/scene/layouts/scatter-layout.ts';
+for(const size of [2,3,5])for(const aspect of [.5,.6,.8,1.19,1.2,1.8,3]){
+ test('all pieces fit size '+size+' at aspect '+aspect,()=>{
+  const layout=createPlayroomLayout(size,aspect),frame=frameLayout(layout,aspect),r=pieceRadius(size);
+  const ids=Array.from({length:size*size},(_,i)=>i),slots=scatterPieces(layout,size,ids,2026);
+  assert.equal(slots.size,ids.length);
   assert.ok(Math.abs(frame.width/frame.height-aspect)<1e-9);
-  assert.ok(layout.capacity>0);
-  assert.ok(frame.height/2-Math.abs(frame.centerZ)>=3.35-1e-9);
-  for(const slot of layout.slots){
-   assert.ok(Math.abs(slot.x)+radius<=frame.width/2);
-   assert.ok(Math.abs(slot.z-frame.centerZ)+radius<=frame.height/2);
-   assert.ok(Math.abs(slot.x)-radius>=3.35||Math.abs(slot.z)-radius>=3.35);
+  assert.ok(frame.height/2-Math.abs(frame.centerZ)>=BOARD_HALF-1e-9);
+  for(const slot of slots.values()){
+   assert.ok(Math.abs(slot.x)+r<=frame.width/2+1e-9);
+   assert.ok(Math.abs(slot.z-frame.centerZ)+r<=frame.height/2+1e-9);
+   assert.ok(Math.abs(slot.x)-r>=BOARD_HALF-1e-9||Math.abs(slot.z)-r>=BOARD_HALF-1e-9);
   }
-  for(let i=0;i<layout.slots.length;i++)for(let j=i+1;j<layout.slots.length;j++){
-   const a=layout.slots[i],b=layout.slots[j];
-   assert.ok(Math.abs(a.x-b.x)>=2*radius-1e-9||Math.abs(a.z-b.z)>=2*radius-1e-9);
-  }
+  assert.equal(new Set([...slots.values()].map(s=>s.y)).size,ids.length);
  });
 }
-test('portrait increases board scale relative to original 18-unit width',()=>{
- const f=frameLayout(createPlayroomLayout(5,.6),.6);
- assert.ok(f.width<12);
+test('board-first framing uses at least 95% of canvas width on tall portrait',()=>{
+ for(const size of [2,3,5])assert.ok(2*BOARD_HALF/createPlayroomLayout(size,.5).width>=.95);
 });
-test('page clamp handles depletion and empty tray',()=>{
- assert.equal(trayPageCount(25,6),5);
- assert.equal(clampTrayPage(4,4,6),0);
- assert.equal(clampTrayPage(-1,25,6),0);
- assert.equal(trayPageCount(0,6),1);
+test('scatter is seeded, shuffle changes assignment, no input mutation',()=>{
+ const layout=createPlayroomLayout(5,.6),ids=Array.from({length:25},(_,i)=>i);
+ assert.deepEqual(scatterPieces(layout,5,ids,2026),scatterPieces(layout,5,ids,2026));
+ assert.notDeepEqual(scatterPieces(layout,5,ids,2026),scatterPieces(layout,5,ids,2027));
+ assert.deepEqual(ids,Array.from({length:25},(_,i)=>i));
 });
