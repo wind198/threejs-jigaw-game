@@ -48,8 +48,8 @@ export class PuzzleSession{
   get placedCount(){return this.states.filter(s=>s==='locked').length}
   get complete(){return this.states.length>0&&this.placedCount===this.states.length}
 }
-/** A forgiving, cell-relative square capture zone; adjacent capture zones never overlap. */
-export const SNAP_HALF_WIDTH_RATIO = .48;
+/** Generous square capture zone around the selected piece's unique target. Zones may overlap; only the selected piece's target is tested. */
+export const SNAP_HALF_WIDTH_RATIO = .80;
 export function shouldSnap(position:Point,target:Point,cellSize:number){
   if(!Number.isFinite(cellSize)||cellSize<=0)return false;
   const tolerance=cellSize*SNAP_HALF_WIDTH_RATIO;

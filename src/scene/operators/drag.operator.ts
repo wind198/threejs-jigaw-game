@@ -3,7 +3,7 @@ import { MIN_PICKUP_Y, PICKUP_CLEARANCE, PIECE_DEPTH, PIECE_BEVEL } from '../geo
 import { shouldSnap } from '../../domain/puzzle';
 import type { PuzzleStore, PieceRuntime } from '../state/puzzle-store';
 import type { SceneResources } from '../resources/scene-resources';
-type Command = { type:'start'; id:number } | { type:'move'; position:THREE.Vector3 } | { type:'end'; cancel?:boolean };
+type Command = { type:'start'; id:number; liftY:number } | { type:'move'; position:THREE.Vector3 } | { type:'end'; cancel?:boolean };
 /** Pointer capture supports drag and tap-to-place. Raycasting selects the nearest (topmost) resting piece. */
 export class DragOperator {
   private readonly ray = new THREE.Raycaster();
@@ -47,7 +47,7 @@ export class DragOperator {
       this.selected=id;
       this.liftY=Math.max(MIN_PICKUP_Y,...this.store.pieces.filter(p=>p.definition.id!==id).map(p=>p.mesh.position.y+PIECE_DEPTH+2*PIECE_BEVEL+PICKUP_CLEARANCE));
       this.offset.copy(this.store.pieces[id].mesh.position).sub(pos); this.offset.y=0;
-      this.commands.push({type:'start',id});
+      this.commands.push({type:'start',id,liftY:this.liftY});
     } else { this.offset.set(0,0,0); }
     this.pointerId=e.pointerId; this.origin={x:e.clientX,y:e.clientY}; this.moved=false;
     this.canvas.setPointerCapture(e.pointerId); e.preventDefault();
@@ -72,7 +72,7 @@ export class DragOperator {
       if(cmd.type==='start'){
         if(this.store.active!==null || this.store.session.getState(cmd.id)!=='resting')continue;
         this.store.active=cmd.id;this.store.session.transition(cmd.id,'dragging');
-        this.store.pieces[cmd.id].mesh.position.y=this.liftY;
+        this.store.pieces[cmd.id].mesh.position.y=cmd.liftY;
       }
       if(cmd.type==='move' && this.store.active!==null)this.store.pieces[this.store.active].mesh.position.copy(cmd.position);
       if(cmd.type==='end' && this.store.active!==null){

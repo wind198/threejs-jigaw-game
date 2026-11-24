@@ -7,7 +7,7 @@ export const TRAY_CENTER_Y = -.22;
 export const TRAY_DEPTH_Y = .09;
 export const TRAY_SURFACE_Y = TRAY_CENTER_Y + TRAY_DEPTH_Y / 2;
 export const RESTING_Y = TRAY_SURFACE_Y + PIECE_BEVEL + CONTACT_GAP;
-// Above the board rails (top = .15), including the lower bevel.
-export const MIN_PICKUP_Y = .22;
-export const PICKUP_CLEARANCE = .035;
+// Deliberate visual lift while selected; resting and locked heights remain unchanged.
+export const MIN_PICKUP_Y = 1.8;
+export const PICKUP_CLEARANCE = .65;
 export const LOCKED_Y = .02;
