@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { SetupGate } from '../src/ui/components/SetupGate';
+import '../src/ui/design-system/tokens.css';
 import '../src/ui/style.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;

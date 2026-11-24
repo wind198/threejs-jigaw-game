@@ -48,3 +48,6 @@ coverage/
 
 # Generated image prompt text (not shipped in the site)
 /output/prompts/
+
+# Generated public artwork
+/public/assets/puzzle-images/
