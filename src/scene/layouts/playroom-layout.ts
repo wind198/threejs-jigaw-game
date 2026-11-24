@@ -6,7 +6,7 @@ export function createPlayroomLayout(size: number, aspect: number): PlayroomLayo
   const pitch = 6 / size * 1.57;
   const portrait = aspect < 1.2;
   if (portrait) {
-    const columns = Math.max(2, Math.floor(7.2 / pitch));
+    const columns = Math.max(1, Math.floor(7.2 / pitch));
     const rows = size === 2 ? 1 : 2;
     const width = Math.max(7.6, columns * pitch + .4);
     const trayDepth = rows * pitch + .4;

@@ -1,69 +1,85 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Lightbulb, RefreshCcw, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Lightbulb, RefreshCcw, Volume2, VolumeX } from 'lucide-react';
 import { ThreeApplication } from '@three-shell/core';
 import { JigsawScene } from '../scene/jigsaw.scene';
 import { JigsawSceneModule, JIGSAW_CONFIG, JIGSAW_CONTAINER, JIGSAW_PROGRESS, JIGSAW_COMPLETE } from '../scene/jigsaw.module';
+import { SceneResources } from '../scene/resources/scene-resources';
+import type { TrayState } from '../scene/state/puzzle-store';
 import type { Puzzle } from '../content/puzzles';
 import { PIECES_PER_SIDE, type Preferences } from '../state/preferences';
 import { IconButton } from './design-system/IconButton';
 import { StoryButton } from './components/StoryButton';
 import { IllustrationIcon } from './components/IllustrationIcon';
+
 export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle: Puzzle; preferences: Preferences; onComplete: () => void; nextId: string; completedCount: number }) {
   const host = useRef<HTMLDivElement>(null);
-  const [count, setCount] = useState(0);
-  const [complete, setComplete] = useState(false);
-  const [game, setGame] = useState(0);
-  const [showHint, setShowHint] = useState(false);
-  const [muted, setMuted] = useState(!preferences.soundEnabled);
-  const mutedRef = useRef(muted);
-  mutedRef.current = muted;
-  const callback = useRef(onComplete);
-  callback.current = onComplete;
-  const pieces = PIECES_PER_SIDE[preferences.difficulty] ** 2;
+  const resources = useRef<SceneResources | null>(null);
+  const [count,setCount] = useState(0);
+  const [complete,setComplete] = useState(false);
+  const [game,setGame] = useState(0);
+  const [showHint,setShowHint] = useState(false);
+  const [muted,setMuted] = useState(!preferences.soundEnabled);
+  const [status,setStatus] = useState<'loading'|'ready'|'error'>('loading');
+  const [tray,setTray] = useState<TrayState>({mode:'portrait',page:0,pages:1,remaining:0});
+  const mutedRef = useRef(muted); mutedRef.current = muted;
+  const callback = useRef(onComplete); callback.current = onComplete;
+  const size = PIECES_PER_SIDE[preferences.difficulty], pieces = size * size;
   useEffect(() => {
     const element = host.current; if (!element) return;
     let cancelled = false;
     let runtime: ThreeApplication | null = null;
+    setStatus('loading');
+    const fail = (error:unknown) => { if (!cancelled) { console.error('Jigsaw failed:',error); setStatus('error'); } };
     void (async () => {
       try {
-        const created = await ThreeApplication.create(JigsawSceneModule, JigsawScene, [
-          { provide: JIGSAW_CONFIG, useValue: { size: PIECES_PER_SIDE[preferences.difficulty], image: puzzle.image } },
-          { provide: JIGSAW_CONTAINER, useValue: element },
-          { provide: JIGSAW_PROGRESS, useValue: (n: number) => { setCount(n); if (n > 0 && !mutedRef.current) { const sound = new Audio('/assets/audio/piece-snap.wav'); sound.volume = .25; void sound.play().catch(() => {}); } } },
-          { provide: JIGSAW_COMPLETE, useValue: () => { setComplete(true); callback.current(); } },
+        const created = await ThreeApplication.create(JigsawSceneModule,JigsawScene,[
+          {provide:JIGSAW_CONFIG,useValue:{size,image:puzzle.image,onTray:(state:TrayState)=>{if(!cancelled)setTray(state);},onError:fail}},
+          {provide:JIGSAW_CONTAINER,useValue:element},
+          {provide:JIGSAW_PROGRESS,useValue:(n:number)=>{if(cancelled)return;setCount(n);if(n>0&&!mutedRef.current){const sound=new Audio('/assets/audio/piece-snap.wav');sound.volume=.25;void sound.play().catch(()=>{});}}},
+          {provide:JIGSAW_COMPLETE,useValue:()=>{if(!cancelled){setComplete(true);callback.current();}}},
         ]);
-        if (cancelled) { await created.dispose(); return; }
-        runtime = created; created.start();
-      } catch (error) { if (!cancelled) console.error('Jigsaw bootstrap failed:', error); }
+        if(cancelled){await created.dispose();return;}
+        runtime=created;resources.current=created.resolve(SceneResources);created.start();setStatus('ready');
+      }catch(error){fail(error);}
     })();
-    return () => { cancelled = true; if (runtime) void runtime.dispose(); };
-  }, [game, preferences.difficulty, puzzle.image]);
-  function restart() { setComplete(false); setCount(0); setShowHint(false); setGame(n => n + 1); }
-  return <div className="game-shell">
-    <header className="game-header">
-      <Link href="/puzzles" className="icon-button" aria-label="Back to puzzles"><ArrowLeft/></Link>
-      <div className="game-heading"><span className="eyebrow">A little adventure</span><h1>{puzzle.title}</h1></div>
-      <div className="game-actions">
-        {preferences.hintsEnabled && <IconButton title="Picture hint" aria-label={showHint ? 'Hide picture hint' : 'Show picture hint'} aria-pressed={showHint} onClick={() => setShowHint(v => !v)}><Lightbulb/></IconButton>}
-        <IconButton title={muted ? 'Unmute' : 'Mute'} aria-label={muted ? 'Unmute' : 'Mute'} onClick={() => setMuted(v => !v)}>{muted ? <VolumeX/> : <Volume2/>}</IconButton>
-        <IconButton title="Restart puzzle" aria-label="Restart puzzle" onClick={restart}><RefreshCcw/></IconButton>
-      </div>
+    return ()=>{cancelled=true;resources.current=null;if(runtime)void runtime.dispose();};
+  },[game,size,puzzle.image]);
+  function restart(){setComplete(false);setCount(0);setShowHint(false);setStatus('loading');setTray({mode:'portrait',page:0,pages:1,remaining:0});setGame(n=>n+1);}
+  function confirmRestart(){if(count===0||complete||window.confirm('Start this puzzle again? Your placed pieces will be reset.'))restart();}
+  return <div className="game-shell playroom">
+    <header className="playroom-header">
+      <Link href="/puzzles/" className="icon-button" aria-label="Back to puzzles" onClick={e=>{if(count>0&&!complete&&!window.confirm('Leave this puzzle? Placed pieces will not be saved.'))e.preventDefault();}}><ArrowLeft aria-hidden/></Link>
+      <div className="playroom-heading"><span>{puzzle.category}</span><h1>{puzzle.title}</h1></div>
+      <div className="playroom-progress"><span aria-live="polite"><IllustrationIcon name="star" size={18} decorative/>{count} / {pieces}</span><progress value={count} max={pieces} aria-label="Puzzle progress"/></div>
     </header>
-    <main className="game-stage">
-      <div className="scene" ref={host}/>
-      {showHint && <div className="hint-preview"><img src={puzzle.image} alt={'Completed picture: ' + puzzle.title}/><span>Find this picture!</span></div>}
-      <div className="game-progress" aria-live="polite"><span><IllustrationIcon name="star" size={19} decorative/> Your puzzle</span><strong>{count} / {pieces}</strong><div className="progress-track"><div style={{ width: (count / pieces * 100) + '%' }}/></div></div>
-      {complete && <div className="modal-backdrop"><section className="modal-card complete-card" role="dialog" aria-modal="true" aria-labelledby="complete-title">
-        <IllustrationIcon name="glowing-star" size={72} decorative className="complete-star"/><h2 id="complete-title">Hooray! You did it!</h2>
-        <img className="complete-image" src={puzzle.image} alt={puzzle.title}/>
-        <p>You finished {puzzle.title}!</p>
-        <Link className="story-button story-button--primary" href={'/play/' + nextId}>Next Puzzle <ArrowRight size={20}/></Link>
-        <StoryButton tone="secondary" onClick={restart}>Play Again <RefreshCcw size={18}/></StoryButton>
-        <Link className="text-link" href="/puzzles">Back to pictures</Link>
-      </section></div>}
+    <main className="playroom-workspace">
+      <div className="playroom-stage">
+        <div className="scene" ref={host} aria-label="Puzzle board and piece trays"/>
+        {status!=='ready'&&<div className="playroom-message" role={status==='error'?'alert':'status'}><h2>{status==='error'?'The puzzle needs a little help':'Getting your puzzle ready'}</h2>{status==='error'&&<><p>Try loading the puzzle again.</p><StoryButton onClick={restart}>Try again</StoryButton><Link href="/puzzles/">Choose another picture</Link></>}</div>}
+      </div>
+      {showHint&&<aside className="playroom-hint"><img src={puzzle.image} alt={'Completed picture: '+puzzle.title} width={144} height={144}/><span>Picture guide</span></aside>}
     </main>
-    <footer className="game-footer"><span><IllustrationIcon name="star" size={15} decorative/> Pick up a piece and find its happy place.</span><span>Take your time — there is no timer!</span></footer>
+    <div className="playroom-controls">
+      <div className="playroom-tray-controls" aria-label="Piece tray">
+        <IconButton aria-label="Previous pieces" disabled={status!=='ready'||tray.page===0} onClick={()=>resources.current?.changePage(-1)}><ChevronLeft aria-hidden/></IconButton>
+        <div className="playroom-tray-label"><strong>{tray.remaining} pieces left</strong><span>Tray {tray.page+1} of {tray.pages}</span></div>
+        <IconButton aria-label="Next pieces" disabled={status!=='ready'||tray.page+1>=tray.pages} onClick={()=>resources.current?.changePage(1)}><ChevronRight aria-hidden/></IconButton>
+      </div>
+      <div className="playroom-actions">
+        {preferences.hintsEnabled&&<IconButton aria-label={showHint?'Hide picture guide':'Show picture guide'} aria-pressed={showHint} onClick={()=>setShowHint(v=>!v)}><Lightbulb aria-hidden/></IconButton>}
+        <IconButton aria-label={muted?'Unmute':'Mute'} aria-pressed={!muted} onClick={()=>setMuted(v=>!v)}>{muted?<VolumeX aria-hidden/>:<Volume2 aria-hidden/>}</IconButton>
+        <IconButton aria-label="Restart puzzle" onClick={confirmRestart}><RefreshCcw aria-hidden/></IconButton>
+      </div>
+    </div>
+    <footer className="playroom-instruction">Drag a piece, or tap it and then tap its place.</footer>
+    {complete&&<div className="modal-backdrop"><section className="modal-card complete-card" role="dialog" aria-modal="true" aria-labelledby="complete-title">
+      <IllustrationIcon name="glowing-star" size={72} decorative className="complete-star"/><h2 id="complete-title">Hooray! You did it!</h2>
+      <img className="complete-image" src={puzzle.image} alt={puzzle.title}/><p>You finished {puzzle.title}!</p>
+      <Link className="story-button story-button--primary" href={'/play/'+nextId+'/'}>Next Puzzle <ArrowRight size={20}/></Link>
+      <StoryButton tone="secondary" onClick={restart}>Play Again <RefreshCcw size={18}/></StoryButton>
+      <Link className="text-link" href="/puzzles/">Back to pictures</Link>
+    </section></div>}
   </div>;
 }

@@ -18,7 +18,7 @@ export class SceneResources {
   private published = '';
   private remainingSignature = '';
   constructor(readonly container: HTMLElement, readonly store: PuzzleStore) {
-    this.artwork = createPuzzleArtwork(store.config.image);
+    this.artwork = createPuzzleArtwork(store.config.image, store.config.onError);
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -105,7 +105,7 @@ export class SceneResources {
       this.dirty = false;
     }
     if (!this.layout) return;
-    const remaining = this.store.pieces.filter(p => this.store.session.getState(p.definition.id) === 'resting');
+    const remaining = this.store.pieces.filter(p => this.store.session.getState(p.definition.id) === 'resting').sort((a,b) => ((a.definition.id * 17 + 7) % (this.store.pieces.length + 1)) - ((b.definition.id * 17 + 7) % (this.store.pieces.length + 1)));
     this.page = clampTrayPage(this.page,remaining.length,this.layout.capacity);
     const signature = this.page + ':' + remaining.map(p=>p.definition.id).join(',');
     if (signature !== this.remainingSignature) {
