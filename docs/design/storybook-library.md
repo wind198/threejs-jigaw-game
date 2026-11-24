@@ -1,0 +1,4 @@
+# Puzzle library
+The library shares PuzzleCard with the homepage and completed collection. Five illustrated navigation links retain the static collection routes. Status, picture detail and debounced search compose locally; picture detail is artwork complexity, not gameplay piece count. Legacy artwork without complexity is shown only under All details.
+Initially render 20 pictures, then append 20 per explicit Show more action. No automatic scroll, remote API or new package. Disable puzzle-link prefetch to avoid fetching many game routes. Completed IDs remain in the existing localStorage key, with defensive decoding and hydration-safe defaults. Category navigation resets local filters. All puzzle routes still exist independently for SEO.
+QA: check 320/390/768/1280/1440 widths, keyboard navigation, empty results, filter reset, replay, refresh after completion, and no duplicated cards after repeated loading. Browser QA remains pending.
