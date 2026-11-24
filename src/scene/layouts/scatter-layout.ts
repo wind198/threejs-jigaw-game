@@ -34,7 +34,7 @@ export function scatterPieces(layout:PlayroomLayout,size:number,ids:readonly num
   for(let i=0;i<layout.trays.length;i++){
     const count=Math.ceil((order.length-offset)/(layout.trays.length-i));
     const slots=scatterTray(layout.trays[i],count,r,rand);
-    slots.forEach((slot,j)=>result.set(order[offset+j],{...slot,y:.09+(offset+j)*.20}));
+    settleStack(slots,r).forEach((slot,j)=>result.set(order[offset+j],slot));
     offset+=count;
   }
   return result;
