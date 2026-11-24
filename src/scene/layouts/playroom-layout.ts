@@ -3,7 +3,7 @@ export type Tray = { x: number; z: number; width: number; depth: number };
 export type PlayroomLayout = { mode: 'landscape' | 'portrait'; width: number; depth: number; centerZ: number; slots: Slot[]; trays: Tray[]; capacity: number };
 /** Board coordinates stay fixed. Slot spacing accounts for the 26% jigsaw tabs on both edges. */
 export function createPlayroomLayout(size: number, aspect: number): PlayroomLayout {
-  const pitch = 6 / size * 1.57;
+  const pitch = 6 / size * 1.60;
   const portrait = aspect < 1.2;
   if (portrait) {
     const columns = Math.max(1, Math.floor(7.2 / pitch));

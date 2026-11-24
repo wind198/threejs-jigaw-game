@@ -19,6 +19,6 @@ export const JIGSAW_CONFIG = Symbol('JIGSAW_CONFIG');
       new DragOperator(res, store, (piece, lock) => animation.begin(piece, lock)), inject: [SceneResources, PuzzleStore, AnimationOperator] },
     JigsawScene,
   ],
-  exports: [JigsawScene, PuzzleStore, SceneResources],
+  exports: [JigsawScene, PuzzleStore, SceneResources, DragOperator],
 })
 export class JigsawSceneModule {}

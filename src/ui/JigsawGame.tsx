@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Lightbulb, RefreshCcw
 import { ThreeApplication } from '@three-shell/core';
 import { JigsawScene } from '../scene/jigsaw.scene';
 import { JigsawSceneModule, JIGSAW_CONFIG, JIGSAW_CONTAINER, JIGSAW_PROGRESS, JIGSAW_COMPLETE } from '../scene/jigsaw.module';
+import { DragOperator } from '../scene/operators/drag.operator';
 import { SceneResources } from '../scene/resources/scene-resources';
 import type { TrayState } from '../scene/state/puzzle-store';
 import type { Puzzle } from '../content/puzzles';
@@ -16,6 +17,7 @@ import { IllustrationIcon } from './components/IllustrationIcon';
 export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle: Puzzle; preferences: Preferences; onComplete: () => void; nextId: string; completedCount: number }) {
   const host = useRef<HTMLDivElement>(null);
   const resources = useRef<SceneResources | null>(null);
+  const drag = useRef<DragOperator | null>(null);
   const [count,setCount] = useState(0);
   const [complete,setComplete] = useState(false);
   const [game,setGame] = useState(0);
@@ -41,12 +43,13 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
           {provide:JIGSAW_COMPLETE,useValue:()=>{if(!cancelled){setComplete(true);callback.current();}}},
         ]);
         if(cancelled){await created.dispose();return;}
-        runtime=created;resources.current=created.resolve(SceneResources);created.start();setStatus('ready');
+        runtime=created;resources.current=created.resolve(SceneResources);drag.current=created.resolve(DragOperator);created.start();setStatus('ready');
       }catch(error){fail(error);}
     })();
-    return ()=>{cancelled=true;resources.current=null;if(runtime)void runtime.dispose();};
+    return ()=>{cancelled=true;resources.current=null;drag.current=null;if(runtime)void runtime.dispose();};
   },[game,size,puzzle.image]);
   function restart(){setComplete(false);setCount(0);setShowHint(false);setStatus('loading');setTray({mode:'portrait',page:0,pages:1,remaining:0});setGame(n=>n+1);}
+  function changeTray(delta:number){if(drag.current?.clearSelection())return;resources.current?.changePage(delta);}
   function confirmRestart(){if(count===0||complete||window.confirm('Start this puzzle again? Your placed pieces will be reset.'))restart();}
   return <div className="game-shell playroom">
     <header className="playroom-header">
@@ -63,9 +66,9 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     </main>
     <div className="playroom-controls">
       <div className="playroom-tray-controls" aria-label="Piece tray">
-        <IconButton aria-label="Previous pieces" disabled={status!=='ready'||tray.page===0} onClick={()=>resources.current?.changePage(-1)}><ChevronLeft aria-hidden/></IconButton>
+        <IconButton aria-label="Previous pieces" disabled={status!=='ready'||tray.page===0} onClick={()=>changeTray(-1)}><ChevronLeft aria-hidden/></IconButton>
         <div className="playroom-tray-label"><strong>{tray.remaining} pieces left</strong><span>Tray {tray.page+1} of {tray.pages}</span></div>
-        <IconButton aria-label="Next pieces" disabled={status!=='ready'||tray.page+1>=tray.pages} onClick={()=>resources.current?.changePage(1)}><ChevronRight aria-hidden/></IconButton>
+        <IconButton aria-label="Next pieces" disabled={status!=='ready'||tray.page+1>=tray.pages} onClick={()=>changeTray(1)}><ChevronRight aria-hidden/></IconButton>
       </div>
       <div className="playroom-actions">
         {preferences.hintsEnabled&&<IconButton aria-label={showHint?'Hide picture guide':'Show picture guide'} aria-pressed={showHint} onClick={()=>setShowHint(v=>!v)}><Lightbulb aria-hidden/></IconButton>}
