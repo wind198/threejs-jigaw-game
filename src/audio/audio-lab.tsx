@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { Howl } from 'howler';
-import { AUDIO_CANDIDATES } from './audio-candidates';
+import { AUDIO_CANDIDATES, BUNDLED_AUDIO } from './audio-candidates';
 type Role = 'browsing'|'gameplay'|'snap'|'success';
 const roles:Role[]=['browsing','gameplay','snap','success'];
 type Track={sound:Howl;url?:string};
@@ -23,6 +23,12 @@ export function AudioLab(){
     document.addEventListener('visibilitychange',visibility);
     return ()=>{document.removeEventListener('visibilitychange',visibility);stop();Object.values(tracks.current).forEach(t=>{t?.sound.unload();if(t?.url)URL.revokeObjectURL(t.url);});tracks.current={};};
   },[]);
+  function loadBundled(role:Role, url:string, title:string){
+    stop();
+    const previous=tracks.current[role];previous?.sound.unload();if(previous?.url)URL.revokeObjectURL(previous.url);
+    const sound=new Howl({src:[url],loop:role==='browsing'||role==='gameplay',volume:0,onload:()=>setStatus(title+' loaded'),onloaderror:()=>setStatus(title+' could not be decoded'),onplayerror:()=>setStatus('Playback blocked; try again.')});
+    tracks.current[role]={sound};setNames(old=>({...old,[role]:title}));
+  }
   function load(role:Role,file:File){
     if(!file.size||file.size>30*1024*1024){setStatus('Choose a nonempty audio file under 30 MB.');return;}
     stop();
@@ -45,9 +51,9 @@ export function AudioLab(){
     timer.current=setTimeout(()=>{timer.current=null;play('success');},250);
   }
   return <main className="site-page" style={{maxWidth:760,margin:'auto',padding:24}}>
-    <h1>Audio audition lab</h1><p>Developer-only preview. Select downloaded local files; nothing is uploaded or saved. Production assets remain unchanged.</p>
+    <h1>Audio audition lab</h1><p>Audition bundled CC0 candidates or select your own local files. Nothing is uploaded or saved. Production audio remains unchanged.</p>
     <h2>Candidate sources</h2><ul>{AUDIO_CANDIDATES.map(c=><li key={c.id}><a href={c.source} target="_blank" rel="noreferrer">{c.role} — {c.author}</a> ({c.license})</li>)}</ul>
-    <h2>Load and listen</h2>{roles.map(role=><section key={role} style={{padding:12,borderBottom:'1px solid #ddd'}}><label>{role}<input type="file" accept="audio/*,.ogg,.mp3,.wav" onChange={e=>{const f=e.target.files?.[0];if(f)load(role,f);}}/></label><button type="button" disabled={!names[role]} onClick={()=>play(role)}>Play {role}</button><small>{names[role]}</small></section>)}
+    <h2>Bundled candidates</h2><p>Choose a candidate, then press Play in its corresponding slot below.</p>{BUNDLED_AUDIO.map(c=><section key={c.id} style={{padding:8}}><button type="button" onClick={()=>loadBundled(c.role,c.local,c.title)}>Load {c.title}</button> <small>{c.role} · {c.author} · <a href={c.source}>CC0 source</a></small></section>)}<h2>Load and listen</h2>{roles.map(role=><section key={role} style={{padding:12,borderBottom:'1px solid #ddd'}}><label>{role}<input type="file" accept="audio/*,.ogg,.mp3,.wav" onChange={e=>{const f=e.target.files?.[0];if(f)load(role,f);}}/></label><button type="button" disabled={!names[role]} onClick={()=>play(role)}>Play {role}</button><small>{names[role]}</small></section>)}
     <h2>Mixer</h2>{([{label:'Music',value:music,set:setMusic},{label:'Effects',value:effects,set:setEffects},{label:'Reward',value:reward,set:setReward}]).map(c=><label key={c.label} style={{display:'block'}}>{c.label} {Math.round(c.value*100)}% <input type="range" min={0} max={.8} step={.05} value={c.value} onChange={e=>c.set(Number(e.target.value))}/></label>)}
     <button type="button" onClick={celebrate} disabled={!names.snap||!names.success}>Test final snap and celebration</button> <button type="button" onClick={stop}>Stop all</button><p role="status">{status}</p>
   </main>;

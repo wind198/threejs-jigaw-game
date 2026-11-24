@@ -1,0 +1,79 @@
+{
+  "repository": "https://github.com/S3M1TR4SH/asset-library",
+  "ref": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
+  "licenseEvidence": "https://github.com/S3M1TR4SH/asset-library/blob/d93498e585d33ca7d30d6881e4a29cb44a80d155/LICENSES.md",
+  "assets": [
+    {
+      "id": "home",
+      "title": "A Place I Call Home",
+      "role": "browsing",
+      "author": "Juhani Junkala",
+      "source": "https://opengameart.org/content/jrpg-pack-4-calm",
+      "license": "CC0 1.0",
+      "local": "/assets/audio/candidates/home.mp3",
+      "upstreamPath": "audio/music/juhani-junkala/a_place_i_call_home.mp3",
+      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
+      "gitBlob": "157c17e5c752c2e5d7e6c813ca2763044285ffb2"
+    },
+    {
+      "id": "peaceful",
+      "title": "Peaceful Days",
+      "role": "gameplay",
+      "author": "Juhani Junkala",
+      "source": "https://opengameart.org/content/jrpg-pack-4-calm",
+      "license": "CC0 1.0",
+      "local": "/assets/audio/candidates/peaceful.mp3",
+      "upstreamPath": "audio/music/juhani-junkala/peaceful_days.mp3",
+      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
+      "gitBlob": "f1dbbd363f6f67031163eda5af12f57ebf1db29f"
+    },
+    {
+      "id": "click",
+      "title": "Click",
+      "role": "snap",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0 1.0",
+      "local": "/assets/audio/candidates/click.mp3",
+      "upstreamPath": "audio/sfx/kenney-interface-sounds/click.mp3",
+      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
+      "gitBlob": "f405cb7fd97bac16e1a68fc8fea82b440a91dbd6"
+    },
+    {
+      "id": "place",
+      "title": "Place",
+      "role": "snap",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0 1.0",
+      "local": "/assets/audio/candidates/place.mp3",
+      "upstreamPath": "audio/sfx/kenney-interface-sounds/place.mp3",
+      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
+      "gitBlob": "24a4bb2ce361016a567ad7e82386750fdadbb1ae"
+    },
+    {
+      "id": "pizzicato",
+      "title": "Pizzicato",
+      "role": "success",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/music-jingles",
+      "license": "CC0 1.0",
+      "local": "/assets/audio/candidates/pizzicato.mp3",
+      "upstreamPath": "audio/music/kenney-music-jingles/pizzicato.mp3",
+      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
+      "gitBlob": "f41a49aa76fa569839a8774ad9b53bdb211bcf71"
+    },
+    {
+      "id": "win",
+      "title": "Win",
+      "role": "success",
+      "author": "Kenney",
+      "source": "https://kenney.nl/assets/interface-sounds",
+      "license": "CC0 1.0",
+      "local": "/assets/audio/candidates/win.mp3",
+      "upstreamPath": "audio/sfx/kenney-interface-sounds/win.mp3",
+      "upstreamCommit": "d93498e585d33ca7d30d6881e4a29cb44a80d155",
+      "gitBlob": "4a88a8fb09f8e75ddc16eb47a6594f970f949eba"
+    }
+  ]
+}
