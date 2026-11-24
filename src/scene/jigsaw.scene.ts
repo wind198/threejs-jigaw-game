@@ -17,8 +17,8 @@ export class JigsawScene extends ThreeShell<FrameContext> {
   getAnimationHost(): AnimationHost { return this.resources.renderer; }
   createPipelines(): PipelineSpec<FrameContext> { return {
     fixedDelta: 1/60, maxFrameDelta: .1, maxStepsPerFrame: 5,
-    simulation: pipe<FrameContext>(() => this.drag.process(), ctx => this.animation.advance(ctx)),
+    simulation: pipe<FrameContext>(() => this.drag.process(), ctx => this.animation.advance(ctx), () => this.resources.updateLayout()),
     presentation: pipe<FrameContext>(() => this.resources.renderer.render(this.resources.scene,this.resources.camera)),
   }; }
-  onFrameError(error: unknown) { console.error('ThreeShell frame error:',error); }
+  onFrameError(error: unknown) { console.error('ThreeShell frame error:',error); this.store.config.onError?.(error); }
 }

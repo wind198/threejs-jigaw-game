@@ -3,6 +3,7 @@ import '../src/ui/design-system/tokens.css';
 import '../src/ui/style.css';
 import '../src/ui/styles/storybook.css';
 import '../src/ui/styles/library.css';
+import '../src/ui/styles/playroom.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 export const metadata: Metadata = {
