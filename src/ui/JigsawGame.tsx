@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, X, Lightbulb, RefreshCcw, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, X, Lightbulb, Volume2, VolumeX } from 'lucide-react';
 import { ThreeApplication } from '@three-shell/core';
 import { JigsawScene } from '../scene/jigsaw.scene';
 import { JigsawSceneModule, JIGSAW_CONFIG, JIGSAW_CONTAINER, JIGSAW_PROGRESS, JIGSAW_COMPLETE } from '../scene/jigsaw.module';
@@ -9,12 +9,18 @@ import type { Puzzle } from '../content/puzzles';
 import { PIECES_PER_SIDE, type Preferences } from '../state/preferences';
 import { IconButton } from './design-system/IconButton';
 import { StoryButton } from './components/StoryButton';
-import { IllustrationIcon } from './components/IllustrationIcon';
+import { CompletionDialog } from './components/CompletionDialog';
+import { LeaveDialog } from './components/LeaveDialog';
+import { useMediaQuery } from 'usehooks-ts';
 
 export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle: Puzzle; preferences: Preferences; onComplete: () => void; nextId: string; completedCount: number }) {
   const host = useRef<HTMLDivElement>(null);
   const [count,setCount] = useState(0);
   const [complete,setComplete] = useState(false);
+  const [leaving,setLeaving] = useState(false);
+  const reduceMotion=useMediaQuery('(prefers-reduced-motion: reduce)',{defaultValue:true,initializeWithValue:false});
+  const animate=preferences.animationsEnabled&&!reduceMotion;
+  const animateRef=useRef(animate);animateRef.current=animate;
   const [game,setGame] = useState(0);
   const [showHint,setShowHint] = useState(false);
   const [muted,setMuted] = useState(!preferences.soundEnabled);
@@ -31,7 +37,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     void (async () => {
       try {
         const created = await ThreeApplication.create(JigsawSceneModule,JigsawScene,[
-          {provide:JIGSAW_CONFIG,useValue:{size,image:puzzle.image,onError:fail}},
+          {provide:JIGSAW_CONFIG,useValue:{size,image:puzzle.image,animationsEnabled:()=>animateRef.current,onError:fail}},
           {provide:JIGSAW_CONTAINER,useValue:element},
           {provide:JIGSAW_PROGRESS,useValue:(n:number)=>{if(cancelled)return;setCount(n);if(n>0&&!mutedRef.current){const sound=new Audio('/assets/audio/piece-snap.wav');sound.volume=.25;void sound.play().catch(()=>{});}}},
           {provide:JIGSAW_COMPLETE,useValue:()=>{if(!cancelled){setComplete(true);callback.current();}}},
@@ -45,7 +51,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
   function restart(){setComplete(false);setCount(0);setShowHint(false);setStatus('loading');setGame(n=>n+1);}
   return <div className="game-shell playroom">
     <header className="playroom-header">
-      <Link href="/puzzles/" className="icon-button" aria-label="Back to puzzles" onClick={e=>{if(count>0&&!complete&&!window.confirm('Leave this puzzle? Placed pieces will not be saved.'))e.preventDefault();}}><ArrowLeft aria-hidden/></Link>
+      <Link href="/puzzles/" className="icon-button" aria-label="Back to puzzles" onClick={e=>{if(count>0&&!complete){e.preventDefault();setLeaving(true);}}}><ArrowLeft aria-hidden/></Link>
       <div className="playroom-heading"><h1>{puzzle.title}</h1></div>
       <div className="playroom-actions">
         {preferences.hintsEnabled&&<IconButton aria-label={showHint?'Hide picture guide':'Show picture guide'} aria-pressed={showHint} onClick={()=>setShowHint(v=>!v)}><Lightbulb aria-hidden/></IconButton>}
@@ -60,12 +66,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
       </div>
       {showHint&&<aside className="playroom-hint" aria-label="Picture guide"><img src={puzzle.image} alt={'Completed picture: '+puzzle.title} width={144} height={144}/><IconButton aria-label="Close picture guide" onClick={()=>setShowHint(false)}><X aria-hidden/></IconButton></aside>}
     </main>
-    {complete&&<div className="modal-backdrop"><section className="modal-card complete-card" role="dialog" aria-modal="true" aria-labelledby="complete-title">
-      <IllustrationIcon name="glowing-star" size={72} decorative className="complete-star"/><h2 id="complete-title">Hooray! You did it!</h2>
-      <img className="complete-image" src={puzzle.image} alt={puzzle.title}/><p>You finished {puzzle.title}!</p>
-      <Link className="story-button story-button--primary" href={'/play/'+nextId+'/'}>Next Puzzle <ArrowRight size={20}/></Link>
-      <StoryButton tone="secondary" onClick={restart}>Play Again <RefreshCcw size={18}/></StoryButton>
-      <Link className="text-link" href="/puzzles/">Back to pictures</Link>
-    </section></div>}
+    {leaving&&!complete&&<LeaveDialog onStay={()=>setLeaving(false)}/>}
+    {complete&&<CompletionDialog puzzle={puzzle} nextId={nextId} onReplay={restart} animate={animate}/>}
   </div>;
 }

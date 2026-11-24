@@ -23,7 +23,7 @@ test('illustration license and provenance are bundled', () => {
 });
 
 test('storybook UI avoids OS-dependent emoji glyphs and uses local illustration component', () => {
-  const paths = ['src/ui/pages/HomePage.tsx', 'src/ui/components/SetupOverlay.tsx', 'src/ui/JigsawGame.tsx'];
+  const paths = ['src/ui/pages/HomePage.tsx', 'src/ui/components/SetupOverlay.tsx', 'src/ui/components/CompletionDialog.tsx'];
   for (const path of paths) {
     const content = read(path);
     assert.match(content, /IllustrationIcon/);

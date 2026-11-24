@@ -6,5 +6,5 @@ export function SetupGate() {
   const client = useIsClient();
   const { preferences, setPreferences } = useGamePreferences();
   if (!client || preferences.setupCompleted) return null;
-  return <SetupOverlay onComplete={setPreferences}/>;
+  return <SetupOverlay preferences={preferences} onComplete={setPreferences}/>;
 }
