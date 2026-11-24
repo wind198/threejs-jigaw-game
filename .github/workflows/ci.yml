@@ -33,6 +33,9 @@ jobs:
         run: |
           test -f out/index.html
           test -f out/puzzles/index.html
+          for category in animals nature space vehicles; do test -f "out/puzzles/$category/index.html"; done
+          grep -q 'Little pieces' out/index.html
+          grep -q 'Animal friends' out/puzzles/animals/index.html
           test -f out/play/sunny-valley/index.html
           test -f out/play/forest-friends/index.html
           test -f out/play/moon-adventure/index.html

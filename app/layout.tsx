@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
-import { SetupGate } from '../src/ui/components/SetupGate';
 import '../src/ui/design-system/tokens.css';
 import '../src/ui/style.css';
+import '../src/ui/styles/storybook.css';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 export const metadata: Metadata = {
@@ -12,5 +12,5 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}<SetupGate/></body></html>;
+  return <html lang="en"><body>{children}</body></html>;
 }
