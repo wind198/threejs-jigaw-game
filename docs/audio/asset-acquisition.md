@@ -11,7 +11,11 @@ Provenance and SHA-256 hashes live in `bundled-candidates.json` and `src/audio/a
 
 ## Production policy
 
-- **Snap:** enabled — randomized across wood-light/medium candidates in `AUDIO_CATALOG.snap`.
-- **Music / success:** still `null` in the production catalog until listening approval. Lab audition does not auto-promote them.
+Applied in `src/audio/audio.catalog.ts`:
 
-Check mobile speaker quality, loop seams, toddler-friendly loudness, repeated wood snaps, and celebration ducking before enabling music/success. Local file audition remains available. The lab is unlinked and noindex, not access controlled.
+- **Browsing music:** `browse.mp3` (home theme) on non-play routes
+- **Gameplay music:** `play.mp3` (activity theme) on `/play/*`
+- **Snap:** wood-light/medium pool
+- **Success:** `clear-jingle.mp3` on puzzle complete
+
+Lab at `/audio-lab/` remains for further audition. Local file audition available. The lab is unlinked and noindex, not access controlled.

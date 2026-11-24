@@ -67,7 +67,7 @@ export function AudioLab(){
   }
   return <main className="site-page" style={{maxWidth:760,margin:'auto',padding:24}}>
     <h1>Audio audition lab</h1>
-    <p>Defaults aim for <strong>kids &amp; toddler–friendly</strong> background music (soft home / curious activity), an <strong>exciting clear/win</strong> jingle, and <strong>wooden board + seat</strong> snap feedback. Audition bundled CC0 candidates or pick local files. Nothing is uploaded. Production music/success stay off until listening approval; production snap already uses the wood samples.</p>
+    <p>Defaults match production: <strong>kids &amp; toddler–friendly</strong> browse/play loops, <strong>exciting clear</strong> win jingle, and <strong>wooden board + seat</strong> snaps. Audition bundled CC0 candidates or pick local files. Nothing is uploaded.</p>
     <h2>Candidate sources</h2>
     <ul>{AUDIO_CANDIDATES.map(c=><li key={c.id}><a href={c.source} target="_blank" rel="noreferrer">{c.role} — {c.author}</a> ({c.license})</li>)}</ul>
     <h2>Bundled candidates</h2>
