@@ -15,7 +15,9 @@ export function createPieceMesh(piece:PieceDefinition,texture:THREE.Texture):THR
     const x=pos.getX(i),y=pos.getY(i);
     uv.setXY(i,(x+3)/6,(y+3)/6);
   }uv.needsUpdate=true;
-  const face=new THREE.MeshStandardMaterial({map:texture,color:0xffffff,roughness:.73,metalness:0,side:THREE.DoubleSide});
+  // Match the browser image: no scene lights, exposure, filmic tone mapping or fog on the printed artwork.
+  const face=new THREE.MeshBasicMaterial({map:texture,color:0xffffff,toneMapped:false,fog:false,side:THREE.DoubleSide});
+  // Keep the wooden bevel and side walls physically lit. The mesh still casts a real shadow.
   const edge=new THREE.MeshStandardMaterial({color:0xedd8ae,roughness:.86,side:THREE.DoubleSide});
   const mesh=new THREE.Mesh(geometry,[face,edge]);
   geometry.translate(-(piece.target.x-3),-(3-piece.target.y),0);
