@@ -3,6 +3,7 @@ import { createPuzzleArtwork } from './puzzle-art';
 import { createPieceMesh } from '../geometry/piece-mesh';
 import { createPlayroomLayout, frameLayout, pieceRadius, type PlayroomLayout } from '../layouts/playroom-layout';
 import { scatterPieces } from '../layouts/scatter-layout';
+import { dropOnTray } from '../layouts/drop-layout';
 import { settleStack } from '../layouts/stack-layout';
 import { RESTING_Y, LOCKED_Y, TRAY_CENTER_Y, TRAY_DEPTH_Y } from '../geometry/piece-dimensions';
 import { PuzzleStore } from '../state/puzzle-store';
@@ -17,6 +18,7 @@ export class SceneResources {
   private trayMeshes: THREE.Mesh[] = [];
   private scatterPending = true;
   private settledCount = -1;
+  private settlePending = false;
   private appliedAspect = 0;
   private dirty = true;
   private aspect = 0;
@@ -83,6 +85,14 @@ export class SceneResources {
     this.trayMeshes = layout.trays.map(t => this.addBox(t.width,TRAY_DEPTH_Y,t.depth,0xe0cdb1,t.x,TRAY_CENTER_Y,t.z));
     this.trayMeshes.push(this.addBox(layout.width,.25,layout.depth,0xf7eee3,0,-.46,layout.centerZ));
   }
+  /** Update the loose piece's home only for a valid tray drop. */
+  relocateHome(piece: import('../state/puzzle-store').PieceRuntime) {
+    if(!this.layout)return;
+    const supports=this.store.pieces.filter(p=>p!==piece&&['resting','dropping'].includes(this.store.session.getState(p.definition.id))).map(p=>p.home);
+    const slot=dropOnTray(this.layout,piece.mesh.position,pieceRadius(this.store.config.size),supports);
+    if(slot)piece.home.set(slot.x,slot.y,slot.z);
+    this.settlePending=true;
+  }
   private isIdle() {
     return this.store.pieces.every(p => ['resting','locked'].includes(this.store.session.getState(p.definition.id)));
   }
@@ -112,13 +122,14 @@ export class SceneResources {
       }
       this.scatterPending=false;
       this.settledCount=remaining.length;
-    } else if(this.settledCount!==remaining.length) {
+    } else if(this.settlePending||this.settledCount!==remaining.length) {
       // Preserve XZ homes and the existing relative stacking order after a piece is placed.
       const ordered=[...remaining].sort((a,b)=>a.home.y-b.home.y||a.definition.id-b.definition.id);
       const slots=settleStack(ordered.map(p=>p.home),pieceRadius(this.store.config.size));
       ordered.forEach((piece,i)=>{piece.home.y=slots[i].y;piece.mesh.position.copy(piece.home);piece.mesh.updateMatrixWorld(true);});
       this.settledCount=remaining.length;
     }
+    this.settlePending=false;
   }
   onSceneDestroy() {
     this.resizeObserver.disconnect();

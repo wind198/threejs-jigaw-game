@@ -3,6 +3,7 @@ import { JigsawScene } from './jigsaw.scene';
 import { PuzzleStore, type PuzzleConfig } from './state/puzzle-store';
 import { SceneResources } from './resources/scene-resources';
 import { DragOperator } from './operators/drag.operator';
+import { CelebrationOperator } from './operators/celebration.operator';
 import { AnimationOperator } from './operators/animation.operator';
 export const JIGSAW_CONTAINER = Symbol('JIGSAW_CONTAINER');
 export const JIGSAW_PROGRESS = Symbol('JIGSAW_PROGRESS');
@@ -17,6 +18,7 @@ export const JIGSAW_CONFIG = Symbol('JIGSAW_CONFIG');
     { provide: AnimationOperator, useFactory: (store: PuzzleStore) => new AnimationOperator(store), inject: [PuzzleStore] },
     { provide: DragOperator, useFactory: (res: SceneResources, store: PuzzleStore, animation: AnimationOperator) =>
       new DragOperator(res, store, (piece, lock) => animation.begin(piece, lock)), inject: [SceneResources, PuzzleStore, AnimationOperator] },
+    { provide: CelebrationOperator, useFactory: (res:SceneResources,store:PuzzleStore)=>new CelebrationOperator(res,store), inject:[SceneResources,PuzzleStore] },
     JigsawScene,
   ],
   exports: [JigsawScene, PuzzleStore],
