@@ -13,12 +13,10 @@ export class SceneResources {
   private resizeObserver: ResizeObserver;
   private layout!: PlayroomLayout;
   private trayMeshes: THREE.Mesh[] = [];
-  private shuffleSeed = 2026;
-  private shufflePending = true;
+  private scatterPending = true;
   private appliedAspect = 0;
   private dirty = true;
   private aspect = 0;
-  private published = '';
   constructor(readonly container: HTMLElement, readonly store: PuzzleStore) {
     this.artwork = createPuzzleArtwork(store.config.image, store.config.onError);
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
@@ -82,7 +80,7 @@ export class SceneResources {
     this.trayMeshes = layout.trays.map(t => this.addBox(t.width,.09,t.depth,0xe0cdb1,t.x,-.22,t.z));
     this.trayMeshes.push(this.addBox(layout.width,.25,layout.depth,0xf7eee3,0,-.46,layout.centerZ));
   }
-  shuffle() { this.shuffleSeed++; this.shufflePending = true; }
+  shuffle() { 2026++; this.shufflePending = true; }
   private isIdle() {
     return this.store.pieces.every(p => ['resting','locked'].includes(this.store.session.getState(p.definition.id)));
   }
@@ -111,10 +109,6 @@ export class SceneResources {
         piece.mesh.visible=true;piece.mesh.position.copy(piece.home);piece.mesh.updateMatrixWorld(true);
       }
       this.shufflePending=false;
-    }
-    const published=this.layout.mode+':'+remaining.length;
-    if(published!==this.published){
-      this.published=published;this.store.callbacks.onTray?.({mode:this.layout.mode,remaining:remaining.length});
     }
   }
   onSceneDestroy() {

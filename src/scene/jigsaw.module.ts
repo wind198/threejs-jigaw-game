@@ -11,7 +11,7 @@ export const JIGSAW_CONFIG = Symbol('JIGSAW_CONFIG');
 @Module({
   providers: [
     { provide: PuzzleStore, useFactory: (config: PuzzleConfig, onProgress: (n: number) => void, onComplete: () => void) => {
-      const store = new PuzzleStore(config); store.callbacks = { onProgress, onComplete, onTray: config.onTray }; return store;
+      const store = new PuzzleStore(config); store.callbacks = { onProgress, onComplete }; return store;
     }, inject: [JIGSAW_CONFIG, JIGSAW_PROGRESS, JIGSAW_COMPLETE] },
     { provide: SceneResources, useFactory: (container: HTMLElement, store: PuzzleStore) => new SceneResources(container, store), inject: [JIGSAW_CONTAINER, PuzzleStore] },
     { provide: AnimationOperator, useFactory: (store: PuzzleStore) => new AnimationOperator(store), inject: [PuzzleStore] },
@@ -19,6 +19,6 @@ export const JIGSAW_CONFIG = Symbol('JIGSAW_CONFIG');
       new DragOperator(res, store, (piece, lock) => animation.begin(piece, lock)), inject: [SceneResources, PuzzleStore, AnimationOperator] },
     JigsawScene,
   ],
-  exports: [JigsawScene, PuzzleStore, SceneResources, DragOperator],
+  exports: [JigsawScene, PuzzleStore],
 })
 export class JigsawSceneModule {}

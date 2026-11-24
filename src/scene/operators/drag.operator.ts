@@ -64,10 +64,6 @@ export class DragOperator {
     if(!cancel){const pos=this.onPlane(e);if(pos){pos.add(this.offset);pos.y=6;this.commands.push({type:'move',position:pos});}}
     this.selected=null;this.commands.push({type:'end',cancel});
   }
-  clearSelection() {
-    if(this.pointerId!==null || this.selected===null)return false;
-    this.selected=null; this.commands.push({type:'end',cancel:true}); return true;
-  }
   process() {
     for(const cmd of this.commands.splice(0)){
       if(cmd.type==='start'){
