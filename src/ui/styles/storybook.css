@@ -1,0 +1,67 @@
+/* Discovery surfaces only; game chrome remains unchanged. */
+.storybook-header { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:72px; padding-block:8px; }
+.storybook-header nav { display:flex; gap:8px; flex-wrap:wrap; }
+.storybook-header nav a { display:inline-flex; align-items:center; gap:7px; min-height:48px; padding:8px 12px; color:var(--color-ink); font-weight:700; border-radius:var(--radius-sm); }
+.storybook-header nav a:hover,.storybook-header nav a[aria-current] { background:var(--color-parchment); }
+.storybook-header .brand-icon { background:var(--color-parchment); color:var(--color-primary); border-radius:var(--radius-md); }
+.storybook-header .brand-overline { color:var(--color-muted); }
+.storybook-header .brand-name { font-family:var(--font-display); }
+.storybook-home { max-width:1320px; }
+.storybook-hero { display:grid; grid-template-columns:1fr 1fr; align-items:center; gap:clamp(24px,5vw,72px); padding:clamp(24px,5vw,64px); margin:24px 0 56px; background:var(--color-parchment); border:1px solid var(--color-border); border-radius:var(--radius-lg); }
+.storybook-kicker { color:var(--color-muted); font-size:12px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; display:flex; align-items:center; gap:8px; margin:0 0 12px; }
+.storybook-hero h1 { font-family:var(--font-display); font-size:clamp(42px,5.3vw,76px); line-height:1.03; letter-spacing:-.035em; margin:0; color:var(--color-ink); }
+.storybook-hero h1 em { color:var(--color-terracotta); font-weight:inherit; }
+.storybook-lead { color:var(--color-muted); font-size:clamp(16px,1.6vw,20px); line-height:1.6; max-width:34ch; margin:24px 0; }
+.storybook-cta { border-radius:var(--radius-md); min-width:180px; font-size:18px; }
+.storybook-note { color:var(--color-muted); font-size:13px; margin:20px 0 0; }
+.storybook-hero-art { position:relative; min-width:0; max-width:480px; margin:0 auto; width:100%; }
+.storybook-art-frame { background:var(--color-surface); border:1px solid var(--color-border); padding:10px; border-radius:var(--radius-md); box-shadow:5px 7px 0 #b9a58c; transform:rotate(2deg); }
+.storybook-art-frame img { display:block; width:100%; height:auto; aspect-ratio:1; object-fit:contain; border-radius:var(--radius-sm); }
+.storybook-art-star { position:absolute; top:-12px; right:-12px; }
+.storybook-hero-art figcaption { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:20px; font-size:12px; color:var(--color-muted); }
+.storybook-section { margin:0 0 52px; }
+.storybook-section-heading { display:flex; align-items:end; justify-content:space-between; gap:16px; margin-bottom:20px; }
+.storybook-section-heading h1,.storybook-section-heading h2,.storybook-parent-note h2 { font-family:var(--font-display); color:var(--color-ink); margin:0; font-size:clamp(28px,3.5vw,42px); line-height:1.15; letter-spacing:-.025em; }
+.storybook-collection-grid,.storybook-featured-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:clamp(12px,2vw,24px); }
+.collection-card,.storybook-puzzle-card { min-width:0; display:block; border-radius:var(--radius-md); transition:transform var(--motion-fast); }
+.collection-card:hover,.storybook-puzzle-card:hover { transform:translateY(-3px); }
+.collection-card { background:var(--color-surface); border:1px solid var(--color-border); overflow:hidden; box-shadow:0 3px 0 var(--color-border); }
+.collection-card img,.storybook-puzzle-card img { width:100%; height:auto; aspect-ratio:1; display:block; object-fit:contain; }
+.collection-caption { padding:14px; display:flex; flex-direction:column; gap:5px; }
+.collection-card--animals .collection-caption { background:#e5edda; }
+.collection-card--nature .collection-caption { background:#f3e6be; }
+.collection-card--space .collection-caption { background:#e5dfef; }
+.collection-card--vehicles .collection-caption { background:#f1dfd0; }
+.collection-category { font-size:11px; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--color-muted); }
+.collection-caption strong { font-family:var(--font-display); font-size:clamp(18px,2vw,25px); line-height:1.15; }
+.collection-count { font-size:13px; display:flex; justify-content:space-between; align-items:center; gap:5px; color:var(--color-ink); margin-top:5px; }
+.storybook-puzzle-card img { border:1px solid var(--color-border); border-radius:var(--radius-sm); }
+.storybook-puzzle-caption { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:12px 2px; }
+.storybook-puzzle-caption strong { font-size:16px; display:block; overflow-wrap:anywhere; }
+.storybook-puzzle-caption small { display:block; margin-top:4px; color:var(--color-muted); }
+.storybook-puzzle-caption svg { flex-shrink:0; }
+.storybook-text-link { display:inline-flex; align-items:center; gap:8px; min-height:48px; color:var(--color-primary-shadow); font-weight:800; }
+.storybook-parent-note { display:flex; align-items:center; gap:20px; padding:24px; background:var(--color-parchment); border:1px solid var(--color-border); border-radius:var(--radius-lg); }
+.storybook-parent-note>svg { flex-shrink:0; color:var(--color-primary); }
+.storybook-parent-note>div { flex:1; }
+.storybook-parent-note h2 { font-size:25px; }
+.storybook-parent-note p { color:var(--color-muted); margin:8px 0 0; line-height:1.5; }
+.storybook-footer { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-top:32px; padding:16px 0; border-top:1px solid var(--color-border); color:var(--color-muted); font-size:13px; }
+.storybook-footer span,.storybook-footer a { display:flex; align-items:center; gap:8px; min-height:48px; }
+.storybook-library-main { padding-top:32px; }
+.category-tabs a { display:inline-flex; align-items:center; min-height:48px; color:var(--color-ink); }
+.category-tabs a.is-selected { color:white; }
+@media(max-width:760px) {
+  .storybook-header { flex-wrap:wrap; gap:4px; }
+  .storybook-header nav { margin-left:auto; }
+  .storybook-header nav a { font-size:13px; padding-inline:8px; }
+  .storybook-hero { grid-template-columns:1fr; padding:24px; gap:32px; margin:16px 0 36px; }
+  .storybook-hero h1 { font-size:clamp(38px,8.5vw,60px); }
+  .storybook-hero-art { max-width:340px; }
+  .storybook-collection-grid,.storybook-featured-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .storybook-section { margin-bottom:36px; }
+  .storybook-section-heading { align-items:start; flex-wrap:wrap; gap:4px; }
+  .storybook-parent-note { flex-wrap:wrap; gap:12px; padding:16px; }
+  .storybook-parent-note>div { flex-basis:calc(100% - 48px); }
+}
+@media(prefers-reduced-motion:reduce) { .collection-card:hover,.storybook-puzzle-card:hover { transform:none; } }

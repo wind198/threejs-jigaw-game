@@ -1,32 +1,46 @@
-'use client';
 import Link from 'next/link';
-import { ArrowRight, Heart, ShieldCheck, Sparkles } from 'lucide-react';
-import { Brand } from '../components/Brand';
+import { ArrowRight, BookOpen, Heart, ShieldCheck, Sparkles } from 'lucide-react';
 import { IllustrationIcon } from '../components/IllustrationIcon';
-import { puzzles } from '../../content/puzzles';
+import { SiteHeader } from '../components/SiteHeader';
+import { SiteFooter } from '../components/SiteFooter';
+import { CollectionCard } from '../components/CollectionCard';
+import { PuzzleCard } from '../components/PuzzleCard';
+import { collections, featuredPuzzles, heroPuzzle } from '../../content/collections';
+import { MyCollection } from '../components/MyCollection';
+
 export function HomePage() {
-  return <div className="site-page home-page">
-    <header className="site-header"><Brand/><Link className="parent-link" href="/parents"><ShieldCheck size={19}/> For parents</Link></header>
-    <main>
-      <section className="hero" aria-labelledby="hero-title">
-        <div className="hero-cloud hero-cloud--one"><IllustrationIcon name="sunflower" size={92} decorative /></div>
-        <div className="hero-cloud hero-cloud--two"><IllustrationIcon name="glowing-star" size={80} decorative /></div>
-        <div className="hero-mascot"><IllustrationIcon name="fox" size={100} decorative /><IllustrationIcon name="sunflower" size={65} decorative /><IllustrationIcon name="rabbit" size={100} decorative /></div>
-        <p className="eyebrow"><Sparkles size={18}/> A little world of wonder</p>
-        <h1 id="hero-title">Every piece is<br/><span>a little adventure.</span></h1>
-        <p>Pick a picture, discover its pieces, and make something wonderful.</p>
-        <Link href="/puzzles" className="story-button story-button--primary hero-cta">Let's Play! <ArrowRight size={22}/></Link>
-        <span className="hero-note">Always free · No ads · No accounts</span>
-      </section>
-      <section className="home-gallery" aria-labelledby="gallery-title">
-        <div className="section-heading"><div><span className="eyebrow">Explore together</span><h2 id="gallery-title">Choose your happy place</h2></div><Link href="/puzzles" className="text-link">All puzzles <ArrowRight size={18}/></Link></div>
-        <div className="picture-grid">
-          {puzzles.slice(0, 6).map(p => <Link key={p.id} href={'/play/' + p.id} className="picture-card">
-            <img src={p.image} alt="" loading="lazy"/><strong>{p.title}</strong><span>{p.category}</span>
-          </Link>)}
+  return <div className="site-page storybook-home">
+    <SiteHeader active="home"/>
+    <main id="main-content">
+      <section className="storybook-hero" aria-labelledby="hero-title">
+        <div className="storybook-hero-copy">
+          <p className="storybook-kicker"><Sparkles size={18} aria-hidden/> A little world of wonder</p>
+          <h1 id="hero-title">Little pieces.<br/><em>Big adventures.</em></h1>
+          <p className="storybook-lead">Discover magical pictures and put them together, one happy piece at a time.</p>
+          <Link href="/puzzles/" className="story-button story-button--primary storybook-cta">Let's play <ArrowRight size={22} aria-hidden/></Link>
+          <p className="storybook-note">Always free. No ads. No accounts.</p>
         </div>
+        <figure className="storybook-hero-art">
+          <div className="storybook-art-frame"><img src={heroPuzzle.image} alt="Forest Friends puzzle illustration" width={640} height={640} fetchPriority="high" decoding="async"/></div>
+          <IllustrationIcon name="glowing-star" decorative size={46} className="storybook-art-star"/>
+          <figcaption><BookOpen size={16} aria-hidden/> From the Animal Friends collection</figcaption>
+        </figure>
+      </section>
+      <section className="storybook-section" aria-labelledby="collections-title">
+        <div className="storybook-section-heading"><div><p className="storybook-kicker">Find your little world</p><h2 id="collections-title">Pick your adventure</h2></div></div>
+        <div className="storybook-collection-grid">{collections.map(collection => <CollectionCard key={collection.slug} collection={collection}/>)}</div>
+      </section>
+      <section className="storybook-section" aria-labelledby="featured-title">
+        <div className="storybook-section-heading"><div><p className="storybook-kicker">A few of our favourites</p><h2 id="featured-title">Ready to play?</h2></div><Link href="/puzzles/" className="storybook-text-link">All puzzles <ArrowRight size={19} aria-hidden/></Link></div>
+        <div className="storybook-featured-grid">{featuredPuzzles.map(puzzle => <PuzzleCard key={puzzle.id} puzzle={puzzle}/>)}</div>
+      </section>
+      <MyCollection/>
+      <section className="storybook-parent-note" aria-labelledby="parent-note-title">
+        <ShieldCheck size={35} aria-hidden/>
+        <div><h2 id="parent-note-title">A gentle place to play</h2><p>No timers, no pressure. Just pictures, patience and a little joy.</p></div>
+        <Link className="storybook-text-link" href="/parents/">For grown-ups <Heart size={18} aria-hidden/></Link>
       </section>
     </main>
-    <footer className="site-footer"><span><Heart size={15}/> Made with love for little explorers</span><Link href="/parents">For Parents</Link></footer>
+    <SiteFooter/>
   </div>;
 }
