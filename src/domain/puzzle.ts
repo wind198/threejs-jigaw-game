@@ -48,4 +48,10 @@ export class PuzzleSession{
   get placedCount(){return this.states.filter(s=>s==='locked').length}
   get complete(){return this.states.length>0&&this.placedCount===this.states.length}
 }
-export function shouldSnap(position:Point,target:Point,cellSize:number){return Math.hypot(position.x-target.x,position.y-target.y)<=cellSize*.34}
+/** A forgiving, cell-relative square capture zone; adjacent capture zones never overlap. */
+export const SNAP_HALF_WIDTH_RATIO = .48;
+export function shouldSnap(position:Point,target:Point,cellSize:number){
+  if(!Number.isFinite(cellSize)||cellSize<=0)return false;
+  const tolerance=cellSize*SNAP_HALF_WIDTH_RATIO;
+  return Math.abs(position.x-target.x)<=tolerance && Math.abs(position.y-target.y)<=tolerance;
+}

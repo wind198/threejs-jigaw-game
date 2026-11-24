@@ -22,7 +22,7 @@ export class AnimationOperator{
       const m=this.motions[i];m.elapsed+=ctx.dt;
       const t=this.store.config.animationsEnabled?.()===false?1:Math.min(1,m.elapsed/m.duration);
       m.piece.mesh.position.lerpVectors(m.start,m.end,1-Math.pow(1-t,3));
-      m.piece.mesh.position.y+=Math.sin(Math.PI*t)*(m.lock?.13:.07);
+      m.piece.mesh.position.y+=Math.sin(Math.PI*t)*(m.lock?.035:.02);
       if(t>=1){this.motions.splice(i,1);this.finish(m.piece,m.lock);}
     }
   }
