@@ -11,13 +11,13 @@ export function PlayroomShell({puzzle,children}:{puzzle:Puzzle;children:ReactNod
        <Link href="/puzzles/" className="icon-button" aria-label="Back to puzzles"><ArrowLeft aria-hidden/></Link>
        <div className="playroom-heading"><h1>{puzzle.title}</h1></div>
      </header>
-     <main className="playroom-workspace">
+     {/* <main className="playroom-workspace">
        <div className="playroom-stage">
          <div className="playroom-entry-board" role="status" aria-busy="true">
            <p>Getting your puzzle ready…</p>
          </div>
        </div>
-     </main>
+     </main> */}
    </div>
    <div className="playroom-entry-content">{children}</div>
  </div>;

@@ -88,7 +88,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     <main className="playroom-workspace">
       <div className="playroom-stage">
         <div key={game} className="scene" ref={host} aria-label="Puzzle board and piece trays" aria-hidden={status === 'error'} aria-busy={status === 'loading'} style={{ visibility: status === 'error' ? 'hidden' : 'visible', pointerEvents: status === 'ready' ? 'auto' : 'none' }} />
-        {status === 'loading' && <div className="playroom-artwork-status" role="status">Getting your pieces ready…</div>}
+        {/* {status === 'loading' && <div className="playroom-artwork-status" role="status">Getting your pieces ready…</div>} */}
         {status === 'error' && <FeedbackScreen kind="error" embedded onRetry={restart} animate={animate} />}
       </div>
       {status === 'ready' && showHint && !celebrating && !complete && <aside className="playroom-hint" aria-label="Picture guide"><img src={puzzle.image} alt={'Completed picture: ' + puzzle.title} width={144} height={144} /><IconButton aria-label="Close picture guide" onClick={() => setShowHint(false)}><X aria-hidden /></IconButton></aside>}
