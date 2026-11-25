@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createPuzzleArtwork } from './puzzle-art';
+import { presentPreparedPieces } from './piece-presentation';
 import { createPieceMesh } from '../geometry/piece-mesh';
 import { createPlayroomLayout, frameLayout, pieceRadius, type PlayroomLayout } from '../layouts/playroom-layout';
 import { scatterPieces } from '../layouts/scatter-layout';
@@ -25,6 +26,7 @@ export class SceneResources {
   private dirty = true;
   private aspect = 0;
   private disposed = false;
+  private prepared = false;
   constructor(
     readonly container: HTMLElement,
     readonly store: PuzzleStore,
@@ -59,20 +61,33 @@ export class SceneResources {
   }
   private async spawnPiecesWhenReady() {
     try {
-      const artwork = await createPuzzleArtwork(this.store.config.image, this.store.config.signal);
-      if (this.disposed) { artwork.dispose(); return; }
+      const artwork = await createPuzzleArtwork(this.store.config.image, this.store.config.signal, this.store.config.artworkCache);
+      if (this.disposed || this.store.config.signal?.aborted) { artwork.dispose(); return; }
       this.artwork = artwork;
       this.buildPieces(artwork);
       this.scatterPending = true;
       this.updateLayout();
-      // Upload materials/geometry while still invisible, then reveal together.
-      this.renderer.compile(this.scene, this.camera);
-      this.animation.introDrop(this.store.pieces);
+      // Wait for a real-sized host in presentation; pieces stay invisible until then.
+      this.prepared = true;
     } catch (error) {
-      if (this.disposed) return;
-      if (error instanceof Error && /cancelled/i.test(error.message)) return;
+      if (this.disposed || this.store.config.signal?.aborted) return;
       this.store.config.onError?.(error);
     }
+  }
+  present() {
+    if (this.disposed || this.store.config.signal?.aborted) return;
+    if (this.container.clientWidth <= 0 || this.container.clientHeight <= 0) return;
+    if (this.prepared && !this.store.artworkReady && this.artwork) {
+      this.updateLayout();
+      presentPreparedPieces(this.renderer, this.scene, this.camera, this.artwork,
+        this.store.pieces, this.store.session.pieces.length,
+        () => this.animation.introDrop(this.store.pieces));
+      this.store.artworkReady = true;
+      this.store.config.onArtworkReady?.();
+      return;
+    }
+    if (this.renderer.getContext().isContextLost()) throw new Error('Puzzle WebGL context lost');
+    this.renderer.render(this.scene, this.camera);
   }
   private addBox(w: number, h: number, d: number, color: number, x: number, y: number, z: number) {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color, roughness: .87 }));
@@ -103,7 +118,7 @@ export class SceneResources {
   }
   private resize() {
     const w = Math.max(1, this.container.clientWidth), h = Math.max(1, this.container.clientHeight);
-    this.renderer.setSize(w, h);
+    this.renderer.setSize(w, h, false);
     this.aspect = w / h;
     this.dirty = true;
   }
@@ -163,6 +178,7 @@ export class SceneResources {
   }
   onSceneDestroy() {
     this.disposed = true;
+    this.store.artworkReady = false;
     this.resizeObserver.disconnect();
     for (const obj of this.objects) {
       if (obj instanceof THREE.Mesh) {
