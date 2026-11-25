@@ -1,0 +1,23 @@
+.status-screen {min-height:100dvh;display:grid;place-items:center;padding:16px;background:var(--color-paper);color:var(--color-ink);}
+.status-screen--embedded {position:absolute;inset:0;z-index:5;min-height:0;overflow:auto;}
+.status-card {width:min(100%,380px);text-align:center;padding:clamp(16px,4vw,28px);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);}
+.status-art {width:min(100%,180px);height:148px;margin:0 auto 12px;display:grid;place-items:center;}
+.status-graphic {width:100%;height:100%;overflow:visible;}
+.status-assembling-piece {animation:status-assemble 1.8s ease-in-out infinite;}
+@keyframes status-assemble {0%,100%{transform:translateY(-22px);}50%,75%{transform:translateY(0);}}
+.status-card h1 {font-family:var(--font-display);font-size:clamp(24px,5vw,34px);margin:0 0 8px;}
+.status-card p {font-size:14px;line-height:1.4;color:var(--color-muted);margin:0 0 18px;}
+.status-loading-track {height:7px;max-width:160px;margin:12px auto 4px;border-radius:10px;background:var(--color-parchment);overflow:hidden;}
+.status-loading-track span {display:block;width:38%;height:100%;border-radius:10px;background:var(--color-primary);animation:status-travel 1.6s ease-in-out infinite alternate;}
+@keyframes status-travel {from{transform:translateX(0)}to{transform:translateX(163%)}}
+.status-actions {display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:10px;}
+.status-action {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:96px;padding:8px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-parchment);color:var(--color-ink);line-height:1.2;font-family:inherit;font-size:11px;font-weight:700;text-decoration:none;cursor:pointer;}
+.status-action--primary {background:var(--color-primary);color:white;border-color:var(--color-primary);}
+.status-action:focus-visible {outline:3px solid var(--color-terracotta);outline-offset:3px;}
+@media(prefers-reduced-motion:reduce){.status-loading-track span{animation:none;width:100%;opacity:.65;}.status-assembling-piece{animation:none;transform:translateY(-12px);}}
+@media(max-height:440px){ .status-art{height:100px;width:122px;}.status-card{padding:12px;}.status-action{min-height:76px;}}
+
+/* Keep the opaque overlay above the rendered scene until the reveal begins. */
+.status-screen--embedded {opacity:1;transition-property:opacity;transition-timing-function:ease-out;}
+.status-screen--fading {opacity:0;}
+@media(prefers-reduced-motion:reduce){.status-screen--embedded{transition-duration:0ms!important;}}

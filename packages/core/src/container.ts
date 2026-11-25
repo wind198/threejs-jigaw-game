@@ -97,20 +97,19 @@ export class Container {
 
   async initialize(): Promise<void> {
     if (this.active) return;
-    // Instantiating providers can instantiate dependencies in other modules first.
-    for (const mod of this.modules.values()) for (const token of mod.providers.keys()) this.resolveFrom(mod, token);
     this.active = true;
-    const initialized: unknown[] = [];
     try {
+      // Constructors may allocate resources before hooks run.
+      for (const mod of this.modules.values()) for (const token of mod.providers.keys()) this.resolveFrom(mod, token);
       for (const instance of this.initializationOrder) {
         await (instance as {onSceneInit?: () => void | Promise<void>}).onSceneInit?.();
-        initialized.push(instance);
       }
     } catch (err) {
-      for (const instance of initialized.reverse()) {
+      for (const instance of [...this.initializationOrder].reverse()) {
         try { await (instance as {onSceneDestroy?: () => void | Promise<void>}).onSceneDestroy?.(); } catch { /* preserve original error */ }
       }
       this.active = false;
+      this.instances.clear();this.initializationOrder.length=0;
       throw err;
     }
   }
