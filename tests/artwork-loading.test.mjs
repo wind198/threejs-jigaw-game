@@ -16,7 +16,8 @@ test('requested artwork waits for decode before creating a texture, and failures
     fillRect(){},beginPath(){},arc(){},fill(){}
   })})};
   try {
-    const pending=createPuzzleArtwork('/panda.avif');
+    const cache={current:null};
+    const pending=createPuzzleArtwork('/panda.avif',undefined,cache);
     assert.equal(draws,0);assert.equal(gradients,0);
     image.onload();
     assert.equal(draws,0);
@@ -24,7 +25,10 @@ test('requested artwork waits for decode before creating a texture, and failures
     const texture=await pending;
     assert.equal(draws,1);assert.equal(gradients,0);
     assert.equal(texture.image.width,640);assert.equal(texture.image.height,480);
+    const decoded=image;
     texture.dispose();
+    const replay=await createPuzzleArtwork('/panda.avif',undefined,cache);
+    assert.equal(image,decoded);assert.notEqual(replay,texture);assert.equal(draws,2);replay.dispose();
     const failed=createPuzzleArtwork('/missing.avif');
     image.onerror();
     await assert.rejects(failed,/failed to load/);
@@ -35,7 +39,8 @@ test('requested artwork waits for decode before creating a texture, and failures
     const cancelled=loadPuzzleImage('/cancel.avif',controller.signal);
     controller.abort();
     await assert.rejects(cancelled,/cancelled/);
-    const sample=await createPuzzleArtwork();
-    assert.equal(gradients,1);sample.dispose();
+    await assert.rejects(createPuzzleArtwork(),/path is required/);
+    await assert.rejects(createPuzzleArtwork(''),/path is required/);
+    assert.equal(gradients,0);
   } finally {globalThis.Image=originalImage;globalThis.document=originalDocument;}
 });

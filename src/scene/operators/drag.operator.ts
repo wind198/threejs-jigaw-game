@@ -38,7 +38,7 @@ export class DragOperator {
   }
   private onPlane(e:PointerEvent) { this.rayFrom(e); return this.ray.ray.intersectPlane(this.plane,new THREE.Vector3()); }
   private pointerDown(e:PointerEvent) {
-    if(this.pointerId!==null || e.button!==0 || this.store.session.complete || this.animation.busy || this.store.pieces.some(p=>['dropping','snapping'].includes(this.store.session.getState(p.definition.id)))) return;
+    if(!this.store.artworkReady || this.pointerId!==null || e.button!==0 || this.store.session.complete || this.animation.busy || this.store.pieces.some(p=>['dropping','snapping'].includes(this.store.session.getState(p.definition.id)))) return;
     const pos=this.onPlane(e); if(!pos)return;
     this.placing=this.selected!==null;
     if(!this.placing){

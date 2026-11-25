@@ -14,10 +14,12 @@ import { LeaveDialog } from './components/LeaveDialog';
 import { useGameAudio } from '../audio/audio.provider';
 import { useGamePreferences } from '../state/preferences';
 import { COMPLETION_AUDIO_DELAY_MS, COMPLETION_DIALOG_DELAY_MS } from './features/play/completion-timing';
+import type { ArtworkCache } from '../scene/resources/puzzle-art';
 import { useMediaQuery } from 'usehooks-ts';
 
 export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle: Puzzle; preferences: Preferences; onComplete: () => void; nextId: string; completedCount: number }) {
   const host = useRef<HTMLDivElement>(null);
+  const artworkCache = useRef<ArtworkCache | null>(null);
   const [count, setCount] = useState(0);
   const [complete, setComplete] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
@@ -31,8 +33,8 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
   const { setPreferences } = useGamePreferences();
   const audio = useGameAudio();
   const audioRef = useRef(audio); audioRef.current = audio;
-  // Board shows immediately; only surface hard failures (no loading overlay on the stage).
-  const [status, setStatus] = useState<'ready' | 'error'>('ready');
+  // Keep the empty board visible; readiness is emitted only after the artwork frame.
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const callback = useRef(onComplete); callback.current = onComplete;
   const size = PIECES_PER_SIDE[preferences.difficulty], pieces = size * size;
   useEffect(() => {
@@ -40,12 +42,17 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     let cancelled = false;
     const controller = new AbortController();
     let completionStarted = false;
+    let failed = false;
+    let preparationTimer: ReturnType<typeof setTimeout> | undefined;
     let audioTimer: ReturnType<typeof setTimeout> | undefined;
     let dialogTimer: ReturnType<typeof setTimeout> | undefined;
     let runtime: ThreeApplication | null = null;
-    setStatus('ready');
+    setStatus('loading');
     const fail = (error: unknown) => {
-      if (!cancelled) {
+      if (!cancelled && !failed) {
+        failed = true;
+        clearTimeout(preparationTimer);
+        controller.abort();
         console.error('Jigsaw failed:', error);
         setStatus('error');
         if (runtime) { const failed = runtime; runtime = null; void failed.dispose().catch(console.error); }
@@ -54,18 +61,20 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     void (async () => {
       try {
         const created = await ThreeApplication.create(JigsawSceneModule, JigsawScene, [
-          { provide: JIGSAW_CONFIG, useValue: { size, image: puzzle.image, signal: controller.signal, animationsEnabled: () => animateRef.current, onError: fail } },
+          { provide: JIGSAW_CONFIG, useValue: { size, image: puzzle.image, signal: controller.signal, artworkCache, onArtworkReady: () => { if (!cancelled && !failed) { clearTimeout(preparationTimer); setStatus('ready'); } }, animationsEnabled: () => animateRef.current, onError: fail } },
           { provide: JIGSAW_CONTAINER, useValue: element },
           { provide: JIGSAW_PROGRESS, useValue: (n: number) => { if (cancelled) return; setCount(n); if (n > 0) audioRef.current.snap(); } },
           { provide: JIGSAW_COMPLETE, useValue: () => { if (!cancelled && !completionStarted) { completionStarted = true; setCelebrating(true); setShowHint(false); setLeaving(false); callback.current(); audioTimer = setTimeout(() => { if (!cancelled) audioRef.current.complete(); }, COMPLETION_AUDIO_DELAY_MS); dialogTimer = setTimeout(() => { if (!cancelled) { setCelebrating(false); setComplete(true); } }, COMPLETION_DIALOG_DELAY_MS); } } },
         ]);
-        if (cancelled) { await created.dispose(); return; }
-        runtime = created; created.start();
+        if (cancelled || failed) { await created.dispose(); return; }
+        runtime = created;
+        preparationTimer = setTimeout(() => fail(new Error('Puzzle artwork presentation timed out')), 20000);
+        created.start();
       } catch (error) { fail(error); }
     })();
-    return () => { cancelled = true; controller.abort(); clearTimeout(audioTimer); clearTimeout(dialogTimer); if (runtime) void runtime.dispose().catch(console.error); };
+    return () => { cancelled = true; controller.abort(); clearTimeout(preparationTimer); clearTimeout(audioTimer); clearTimeout(dialogTimer); if (runtime) void runtime.dispose().catch(console.error); };
   }, [game, size, puzzle.image]);
-  function restart() { audioRef.current.reset(); setComplete(false); setCelebrating(false); setCount(0); setShowHint(false); setStatus('ready'); setGame(n => n + 1); }
+  function restart() { audioRef.current.reset(); setComplete(false); setCelebrating(false); setCount(0); setShowHint(false); setLeaving(false); setStatus('loading'); setGame(n => n + 1); }
   return <div className="game-shell playroom">
     <header className="playroom-header">
       <Link href="/puzzles/" className="icon-button" aria-label="Back to puzzles" onClick={e => { if (count > 0 && !complete && !celebrating) { e.preventDefault(); setLeaving(true); } }}><ArrowLeft aria-hidden /></Link>
@@ -78,7 +87,8 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     <progress className="playroom-progress-line" value={count} max={pieces} aria-label="Puzzle progress" />
     <main className="playroom-workspace">
       <div className="playroom-stage">
-        <div className="scene" ref={host} aria-label="Puzzle board and piece trays" aria-hidden={status !== 'ready'} style={{ visibility: status === 'ready' ? 'visible' : 'hidden' }} />
+        <div key={game} className="scene" ref={host} aria-label="Puzzle board and piece trays" aria-hidden={status === 'error'} aria-busy={status === 'loading'} style={{ visibility: status === 'error' ? 'hidden' : 'visible', pointerEvents: status === 'ready' ? 'auto' : 'none' }} />
+        {status === 'loading' && <div className="playroom-artwork-status" role="status">Getting your pieces ready…</div>}
         {status === 'error' && <FeedbackScreen kind="error" embedded onRetry={restart} animate={animate} />}
       </div>
       {status === 'ready' && showHint && !celebrating && !complete && <aside className="playroom-hint" aria-label="Picture guide"><img src={puzzle.image} alt={'Completed picture: ' + puzzle.title} width={144} height={144} /><IconButton aria-label="Close picture guide" onClick={() => setShowHint(false)}><X aria-hidden /></IconButton></aside>}

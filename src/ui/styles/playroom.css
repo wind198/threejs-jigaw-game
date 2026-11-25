@@ -18,3 +18,5 @@
 .playroom-progress-line::-webkit-progress-bar { background:var(--color-border); }
 .playroom-progress-line::-webkit-progress-value { background:var(--color-primary); }
 .playroom-progress-line::-moz-progress-bar { background:var(--color-primary); }
+
+.playroom-artwork-status {position:absolute;bottom:12px;left:50%;transform:translateX(-50%);padding:8px 14px;border-radius:var(--radius-md);background:var(--color-paper);color:var(--color-ink);font-size:13px;text-align:center;pointer-events:none;white-space:nowrap;}
