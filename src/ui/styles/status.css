@@ -16,3 +16,8 @@
 .status-action:focus-visible {outline:3px solid var(--color-terracotta);outline-offset:3px;}
 @media(prefers-reduced-motion:reduce){.status-loading-track span{animation:none;width:100%;opacity:.65;}.status-assembling-piece{animation:none;transform:translateY(-12px);}}
 @media(max-height:440px){ .status-art{height:100px;width:122px;}.status-card{padding:12px;}.status-action{min-height:76px;}}
+
+/* Keep the opaque overlay above the rendered scene until the reveal begins. */
+.status-screen--embedded {opacity:1;transition-property:opacity;transition-timing-function:ease-out;}
+.status-screen--fading {opacity:0;}
+@media(prefers-reduced-motion:reduce){.status-screen--embedded{transition-duration:0ms!important;}}

@@ -14,6 +14,7 @@ import { LeaveDialog } from './components/LeaveDialog';
 import { useGameAudio } from '../audio/audio.provider';
 import { useGamePreferences } from '../state/preferences';
 import { COMPLETION_AUDIO_DELAY_MS, COMPLETION_DIALOG_DELAY_MS } from './features/play/completion-timing';
+import { remainingLoadingTime, LOADING_FADE_MS } from './features/play/loading-timing';
 import { useMediaQuery } from 'usehooks-ts';
 
 export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle: Puzzle; preferences: Preferences; onComplete: () => void; nextId: string; completedCount: number }) {
@@ -31,19 +32,22 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
   const {setPreferences}=useGamePreferences();
   const audio=useGameAudio();
   const audioRef=useRef(audio); audioRef.current=audio;
-  const [status,setStatus] = useState<'loading'|'ready'|'error'>('loading');
+  const [status,setStatus] = useState<'loading'|'revealing'|'ready'|'error'>('loading');
   const callback = useRef(onComplete); callback.current = onComplete;
   const size = PIECES_PER_SIDE[preferences.difficulty], pieces = size * size;
   useEffect(() => {
     const element = host.current; if (!element) return;
     let cancelled = false;
     const controller=new AbortController();
+    const loadingStarted=performance.now();
+    let revealTimer:ReturnType<typeof setTimeout>|undefined;
+    let fadeTimer:ReturnType<typeof setTimeout>|undefined;
     let completionStarted=false;
     let audioTimer:ReturnType<typeof setTimeout>|undefined;
     let dialogTimer:ReturnType<typeof setTimeout>|undefined;
     let runtime: ThreeApplication | null = null;
     setStatus('loading');
-    const fail = (error:unknown) => { if (!cancelled) { console.error('Jigsaw failed:',error); setStatus('error'); } };
+    const fail = (error:unknown) => { if (!cancelled) { clearTimeout(revealTimer);clearTimeout(fadeTimer);console.error('Jigsaw failed:',error); setStatus('error'); } };
     void (async () => {
       try {
         const created = await ThreeApplication.create(JigsawSceneModule,JigsawScene,[
@@ -53,10 +57,16 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
           {provide:JIGSAW_COMPLETE,useValue:()=>{if(!cancelled&&!completionStarted){completionStarted=true;setCelebrating(true);setShowHint(false);setLeaving(false);callback.current();audioTimer=setTimeout(()=>{if(!cancelled)audioRef.current.complete();},COMPLETION_AUDIO_DELAY_MS);dialogTimer=setTimeout(()=>{if(!cancelled){setCelebrating(false);setComplete(true);}},COMPLETION_DIALOG_DELAY_MS);}}},
         ]);
         if(cancelled){await created.dispose();return;}
-        runtime=created;created.start();setStatus('ready');
+        runtime=created;created.start();
+        revealTimer=setTimeout(()=>{
+          if(cancelled)return;
+          if(!animateRef.current){setStatus('ready');return;}
+          setStatus('revealing');
+          fadeTimer=setTimeout(()=>{if(!cancelled)setStatus('ready');},LOADING_FADE_MS);
+        },remainingLoadingTime(performance.now()-loadingStarted));
       }catch(error){fail(error);}
     })();
-    return ()=>{cancelled=true;controller.abort();clearTimeout(audioTimer);clearTimeout(dialogTimer);if(runtime)void runtime.dispose();};
+    return ()=>{cancelled=true;controller.abort();clearTimeout(revealTimer);clearTimeout(fadeTimer);clearTimeout(audioTimer);clearTimeout(dialogTimer);if(runtime)void runtime.dispose();};
   },[game,size,puzzle.image]);
   function restart(){audioRef.current.reset();setComplete(false);setCelebrating(false);setCount(0);setShowHint(false);setStatus('loading');setGame(n=>n+1);}
   return <div className="game-shell playroom">
@@ -72,7 +82,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     <main className="playroom-workspace">
       <div className="playroom-stage">
         <div className="scene" ref={host} aria-label="Puzzle board and piece trays"/>
-        {status!=='ready'&&<StatusScreen kind={status} embedded onRetry={status==='error'?restart:undefined}/>}
+        {status!=='ready'&&<StatusScreen kind={status==='error'?'error':'loading'} embedded fading={status==='revealing'} fadeDuration={LOADING_FADE_MS} onRetry={status==='error'?restart:undefined}/>}
       </div>
       {showHint&&!celebrating&&!complete&&<aside className="playroom-hint" aria-label="Picture guide"><img src={puzzle.image} alt={'Completed picture: '+puzzle.title} width={144} height={144}/><IconButton aria-label="Close picture guide" onClick={()=>setShowHint(false)}><X aria-hidden/></IconButton></aside>}
     </main>

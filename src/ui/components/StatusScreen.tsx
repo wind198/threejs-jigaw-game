@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import { LayoutGrid, RefreshCcw } from 'lucide-react';
 import { StatusGraphic } from './StatusGraphic';
-type Props={kind:'loading'|'error'|'not-found';onRetry?:()=>void;embedded?:boolean};
-export function StatusScreen({kind,onRetry,embedded=false}:Props){
+type Props={kind:'loading'|'error'|'not-found';onRetry?:()=>void;embedded?:boolean;fading?:boolean;fadeDuration?:number};
+export function StatusScreen({kind,onRetry,embedded=false,fading=false,fadeDuration=280}:Props){
  const loading=kind==='loading';
  const content=<section className="status-card" role={loading?'status':kind==='error'?'alert':undefined} aria-busy={loading}>
    <div className={'status-art status-art--'+kind} aria-hidden="true">
@@ -15,5 +15,5 @@ export function StatusScreen({kind,onRetry,embedded=false}:Props){
      <Link className={'status-action '+(!onRetry?'status-action--primary':'')} href="/puzzles/" aria-label="Browse puzzle pictures"><LayoutGrid size={40} aria-hidden/><span>Pictures</span></Link>
    </div>}
  </section>;
- return embedded?<div className="status-screen status-screen--embedded">{content}</div>:<main className="status-screen">{content}</main>;
+ return embedded?<div className={"status-screen status-screen--embedded"+(fading?" status-screen--fading":"")} style={{transitionDuration:fadeDuration+"ms"}}>{content}</div>:<main className="status-screen">{content}</main>;
 }
