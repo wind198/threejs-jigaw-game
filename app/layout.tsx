@@ -6,6 +6,7 @@ import '../src/ui/styles/storybook.css';
 import '../src/ui/styles/library.css';
 import '../src/ui/styles/playroom.css';
 import '../src/ui/styles/dialogs.css';
+import '../src/ui/styles/status.css';
 
 import { SITE_NAME, SITE_DESCRIPTION, siteUrl } from '../src/seo/site';
 import '../src/ui/styles/puzzle-landing.css';

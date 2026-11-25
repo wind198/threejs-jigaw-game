@@ -8,7 +8,7 @@ import { JigsawSceneModule, JIGSAW_CONFIG, JIGSAW_CONTAINER, JIGSAW_PROGRESS, JI
 import type { Puzzle } from '../content/puzzles';
 import { PIECES_PER_SIDE, type Preferences } from '../state/preferences';
 import { IconButton } from './design-system/IconButton';
-import { StoryButton } from './components/StoryButton';
+import { StatusScreen } from './components/StatusScreen';
 import { CompletionDialog } from './components/CompletionDialog';
 import { LeaveDialog } from './components/LeaveDialog';
 import { useGameAudio } from '../audio/audio.provider';
@@ -37,6 +37,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
   useEffect(() => {
     const element = host.current; if (!element) return;
     let cancelled = false;
+    const controller=new AbortController();
     let completionStarted=false;
     let audioTimer:ReturnType<typeof setTimeout>|undefined;
     let dialogTimer:ReturnType<typeof setTimeout>|undefined;
@@ -46,7 +47,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     void (async () => {
       try {
         const created = await ThreeApplication.create(JigsawSceneModule,JigsawScene,[
-          {provide:JIGSAW_CONFIG,useValue:{size,image:puzzle.image,animationsEnabled:()=>animateRef.current,onError:fail}},
+          {provide:JIGSAW_CONFIG,useValue:{size,image:puzzle.image,signal:controller.signal,animationsEnabled:()=>animateRef.current,onError:fail}},
           {provide:JIGSAW_CONTAINER,useValue:element},
           {provide:JIGSAW_PROGRESS,useValue:(n:number)=>{if(cancelled)return;setCount(n);if(n>0)audioRef.current.snap();}},
           {provide:JIGSAW_COMPLETE,useValue:()=>{if(!cancelled&&!completionStarted){completionStarted=true;setCelebrating(true);setShowHint(false);setLeaving(false);callback.current();audioTimer=setTimeout(()=>{if(!cancelled)audioRef.current.complete();},COMPLETION_AUDIO_DELAY_MS);dialogTimer=setTimeout(()=>{if(!cancelled){setCelebrating(false);setComplete(true);}},COMPLETION_DIALOG_DELAY_MS);}}},
@@ -55,7 +56,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
         runtime=created;created.start();setStatus('ready');
       }catch(error){fail(error);}
     })();
-    return ()=>{cancelled=true;clearTimeout(audioTimer);clearTimeout(dialogTimer);if(runtime)void runtime.dispose();};
+    return ()=>{cancelled=true;controller.abort();clearTimeout(audioTimer);clearTimeout(dialogTimer);if(runtime)void runtime.dispose();};
   },[game,size,puzzle.image]);
   function restart(){audioRef.current.reset();setComplete(false);setCelebrating(false);setCount(0);setShowHint(false);setStatus('loading');setGame(n=>n+1);}
   return <div className="game-shell playroom">
@@ -63,7 +64,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
       <Link href="/puzzles/" className="icon-button" aria-label="Back to puzzles" onClick={e=>{if(count>0&&!complete&&!celebrating){e.preventDefault();setLeaving(true);}}}><ArrowLeft aria-hidden/></Link>
       <div className="playroom-heading"><h1>{puzzle.title}</h1></div>
       <div className="playroom-actions">
-        {preferences.hintsEnabled&&!celebrating&&!complete&&<IconButton aria-label={showHint?'Hide picture guide':'Show picture guide'} aria-pressed={showHint} onClick={()=>setShowHint(v=>!v)}><Lightbulb aria-hidden/></IconButton>}
+        {status==='ready'&&preferences.hintsEnabled&&!celebrating&&!complete&&<IconButton aria-label={showHint?'Hide picture guide':'Show picture guide'} aria-pressed={showHint} onClick={()=>setShowHint(v=>!v)}><Lightbulb aria-hidden/></IconButton>}
         <IconButton aria-label={muted?'Unmute':'Mute'} aria-pressed={!muted} onClick={()=>setPreferences(old=>({...old,soundEnabled:!old.soundEnabled}))}>{muted?<VolumeX aria-hidden/>:<Volume2 aria-hidden/>}</IconButton>
       </div>
     </header>
@@ -71,7 +72,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     <main className="playroom-workspace">
       <div className="playroom-stage">
         <div className="scene" ref={host} aria-label="Puzzle board and piece trays"/>
-        {status!=='ready'&&<div className="playroom-message" role={status==='error'?'alert':'status'}><h2>{status==='error'?'The puzzle needs a little help':'Getting your puzzle ready'}</h2>{status==='error'&&<><p>Try loading the puzzle again.</p><StoryButton onClick={restart}>Try again</StoryButton><Link href="/puzzles/">Choose another picture</Link></>}</div>}
+        {status!=='ready'&&<StatusScreen kind={status} embedded onRetry={status==='error'?restart:undefined}/>}
       </div>
       {showHint&&!celebrating&&!complete&&<aside className="playroom-hint" aria-label="Picture guide"><img src={puzzle.image} alt={'Completed picture: '+puzzle.title} width={144} height={144}/><IconButton aria-label="Close picture guide" onClick={()=>setShowHint(false)}><X aria-hidden/></IconButton></aside>}
     </main>

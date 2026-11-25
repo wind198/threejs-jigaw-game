@@ -1,0 +1,4 @@
+# Artwork bootstrap and status screens
+Decode configured artwork before creating texture or meshes in awaited SceneResources.onSceneInit. Only omitted paths produce sample art. Decode timeout: 15 seconds. Cancel on unmount/replay. Failed initialization rolls back all constructed providers, including those with not-yet-run hooks. Preserve native raster/sRGB and unlit material.
+Shared illustrated status screens cover dynamic game import, hydration, artwork loading, game errors, route loading/error and not found. Large graphics and 40px action icons with 11px labels; no fabricated loading percentage. Reduced motion disables loading animation. Retry is available on errors, pictures on errors/404. Static host must serve exported 404.html with actual HTTP 404.
+QA: slow refresh /play/animals-bamboo-panda-village/, blocked image, retry, navigation during decode, unknown route, short landscape, reduced motion. Run npm run typecheck and npm test. Browser/CI unverified.
