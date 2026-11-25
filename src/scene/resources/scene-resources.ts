@@ -11,7 +11,7 @@ export class SceneResources {
   readonly scene = new THREE.Scene();
   readonly camera = new THREE.OrthographicCamera(-8, 8, 5, -5, .1, 100);
   readonly renderer: THREE.WebGLRenderer;
-  readonly artwork: THREE.CanvasTexture;
+  private artwork?: THREE.CanvasTexture;
   readonly objects: THREE.Object3D[] = [];
   private resizeObserver: ResizeObserver;
   private layout!: PlayroomLayout;
@@ -23,7 +23,6 @@ export class SceneResources {
   private dirty = true;
   private aspect = 0;
   constructor(readonly container: HTMLElement, readonly store: PuzzleStore) {
-    this.artwork = createPuzzleArtwork(store.config.image, store.config.onError);
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -41,8 +40,15 @@ export class SceneResources {
     Object.assign(light.shadow.camera, { left: -13, right: 13, top: 13, bottom: -13, near: 1, far: 35 });
     light.shadow.bias = -.00015; light.shadow.normalBias = .006;
     this.scene.add(light); this.objects.push(light);
-    this.buildBoard(); this.buildPieces();
-    this.resizeObserver = new ResizeObserver(() => this.resize()); this.resizeObserver.observe(container); this.resize(); this.updateLayout();
+    this.resizeObserver = new ResizeObserver(() => this.resize());
+    this.resizeObserver.observe(container);
+    this.resize();
+  }
+  async onSceneInit() {
+    this.artwork = await createPuzzleArtwork(this.store.config.image, this.store.config.signal);
+    this.buildBoard();
+    this.buildPieces(this.artwork);
+    this.updateLayout();
   }
   private addBox(w: number, h: number, d: number, color: number, x: number, y: number, z: number) {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color, roughness: .87 }));
@@ -61,9 +67,9 @@ export class SceneResources {
     for (const [x, z, w, d] of [[-3.10, 0, .10, 6.3], [3.10, 0, .10, 6.3], [0, -3.10, 6.3, .10], [0, 3.10, 6.3, .10]] as const)
       this.addBox(w, .24, d, 0xc58c65, x, .03, z);
   }
-  private buildPieces() {
+  private buildPieces(artwork: THREE.CanvasTexture) {
     this.store.pieces = this.store.session.pieces.map(def => {
-      const mesh = createPieceMesh(def, this.artwork);
+      const mesh = createPieceMesh(def, artwork);
       const home = new THREE.Vector3(0, RESTING_Y, 0);
       const target = new THREE.Vector3(def.target.x - 3, LOCKED_Y, def.target.y - 3);
       mesh.position.copy(home); this.scene.add(mesh); this.objects.push(mesh);
@@ -140,6 +146,6 @@ export class SceneResources {
       }
       this.scene.remove(obj);
     }
-    this.artwork.dispose(); this.renderer.dispose(); this.renderer.domElement.remove();
+    this.artwork?.dispose(); this.objects.length = 0; this.renderer.dispose(); this.renderer.domElement.remove();
   }
 }

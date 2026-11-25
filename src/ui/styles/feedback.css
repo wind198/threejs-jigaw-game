@@ -1,0 +1,20 @@
+.feedback-screen{min-height:100dvh;display:grid;place-items:center;overflow:auto;padding:24px;background:radial-gradient(ellipse at center,var(--color-surface),var(--color-paper) 70%);text-align:center;color:var(--color-ink)}
+.feedback-screen--embedded{position:absolute;inset:0;z-index:4;min-height:0;animation:feedback-enter 180ms ease-out}
+.feedback-content{display:flex;flex-direction:column;align-items:center;gap:12px;width:min(100%,420px);margin:auto}
+.feedback-mascot{display:block;width:clamp(130px,36vmin,280px);height:auto;overflow:visible}
+.feedback-screen h1,.feedback-screen h2{font:700 clamp(24px,5vmin,40px)/1.15 var(--font-display);margin:0}
+.feedback-screen p{font-size:clamp(14px,2.5vmin,18px);color:var(--color-muted);margin:8px 0 0}
+.feedback-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:10px}
+.feedback-actions .story-button{min-height:48px}
+.feedback-actions svg{width:20px;height:20px;flex:none}
+.feedback-dots{display:flex;gap:9px;padding:8px}
+.feedback-dots span{width:12px;height:12px;border-radius:50%;background:var(--color-primary)}
+.feedback-screen[data-animate=true] .feedback-dots span{animation:feedback-bounce 1.2s ease-in-out infinite}
+.feedback-dots span:nth-child(2){animation-delay:.15s!important}
+.feedback-dots span:nth-child(3){animation-delay:.3s!important}
+.feedback-screen[data-animate=true] .feedback-character{animation:feedback-float 2.8s ease-in-out infinite;transform-origin:center}
+@keyframes feedback-float{50%{transform:translateY(-8px) rotate(2deg)}}
+@keyframes feedback-bounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-6px);opacity:1}}
+@keyframes feedback-enter{from{opacity:.85}to{opacity:1}}
+@media(max-height:440px) and (orientation:landscape){.feedback-content{gap:8px}.feedback-screen{padding:12px}.feedback-mascot{width:130px}.feedback-actions{margin-top:4px}}
+@media(prefers-reduced-motion:reduce){.feedback-screen,.feedback-screen *{animation:none!important;transition:none!important}}
