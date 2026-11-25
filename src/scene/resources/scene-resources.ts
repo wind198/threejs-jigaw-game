@@ -22,6 +22,7 @@ export class SceneResources {
   private appliedAspect = 0;
   private dirty = true;
   private aspect = 0;
+  private firstFramePresented = false;
   constructor(readonly container: HTMLElement, readonly store: PuzzleStore) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -48,6 +49,20 @@ export class SceneResources {
     this.store.config.signal?.throwIfAborted();
     this.buildPieces(this.artwork);
     this.resize();this.updateLayout();
+  }
+  /** Readiness means a populated scene has actually rendered to a sized canvas. */
+  present() {
+    if(this.container.clientWidth<=0||this.container.clientHeight<=0)return;
+    if(!this.firstFramePresented){
+      this.resize();this.updateLayout();
+      if(!this.artwork||this.store.pieces.length!==this.store.session.pieces.length||!this.layout)return;
+    }
+    if(this.renderer.getContext().isContextLost())throw new Error('Puzzle WebGL context lost');
+    this.renderer.render(this.scene,this.camera);
+    if(!this.firstFramePresented&&this.renderer.info.render.calls>0){
+      this.firstFramePresented=true;
+      this.store.config.onFirstFrame?.();
+    }
   }
   private addBox(w: number, h: number, d: number, color: number, x: number, y: number, z: number) {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color, roughness: .87 }));
@@ -77,7 +92,7 @@ export class SceneResources {
   }
   private resize() {
     const w = Math.max(1, this.container.clientWidth), h = Math.max(1, this.container.clientHeight);
-    this.renderer.setSize(w,h);
+    this.renderer.setSize(w,h,false);
     this.aspect = w / h;
     this.dirty = true;
   }

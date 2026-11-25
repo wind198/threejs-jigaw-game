@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { generatePieces, PuzzleSession, type PieceDefinition } from '../../domain/puzzle';
 export type PieceRuntime = { definition: PieceDefinition; mesh: THREE.Mesh; home: THREE.Vector3; target: THREE.Vector3 };
-export type PuzzleConfig = { size: number; image: string; signal?: AbortSignal; animationsEnabled?: () => boolean; onError?: (error: unknown) => void };
+export type PuzzleConfig = { size: number; image: string; signal?: AbortSignal; onFirstFrame?: () => void; animationsEnabled?: () => boolean; onError?: (error: unknown) => void };
 export class PuzzleStore {
   session: PuzzleSession;
   pieces: PieceRuntime[] = [];

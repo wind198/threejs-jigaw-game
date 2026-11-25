@@ -40,6 +40,8 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     let cancelled = false;
     const controller=new AbortController();
     const loadingStarted=performance.now();
+    let firstFrameTimer:ReturnType<typeof setTimeout>|undefined;
+    let failed=false;
     let revealTimer:ReturnType<typeof setTimeout>|undefined;
     let fadeTimer:ReturnType<typeof setTimeout>|undefined;
     let completionStarted=false;
@@ -47,26 +49,32 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     let dialogTimer:ReturnType<typeof setTimeout>|undefined;
     let runtime: ThreeApplication | null = null;
     setStatus('loading');
-    const fail = (error:unknown) => { if (!cancelled) { clearTimeout(revealTimer);clearTimeout(fadeTimer);console.error('Jigsaw failed:',error); setStatus('error'); } };
+    const fail = (error:unknown) => { if (!cancelled) { failed=true;clearTimeout(firstFrameTimer);clearTimeout(revealTimer);clearTimeout(fadeTimer);console.error('Jigsaw failed:',error); setStatus('error'); } };
+    const onFirstFrame=()=>{
+      if(cancelled||failed)return;
+      clearTimeout(firstFrameTimer);
+      revealTimer=setTimeout(()=>{
+        if(cancelled||failed)return;
+        if(!animateRef.current){setStatus('ready');return;}
+        setStatus('revealing');
+        fadeTimer=setTimeout(()=>{if(!cancelled&&!failed)setStatus('ready');},LOADING_FADE_MS);
+      },remainingLoadingTime(performance.now()-loadingStarted));
+    };
     void (async () => {
       try {
         const created = await ThreeApplication.create(JigsawSceneModule,JigsawScene,[
-          {provide:JIGSAW_CONFIG,useValue:{size,image:puzzle.image,signal:controller.signal,animationsEnabled:()=>animateRef.current,onError:fail}},
+          {provide:JIGSAW_CONFIG,useValue:{size,image:puzzle.image,signal:controller.signal,onFirstFrame,animationsEnabled:()=>animateRef.current,onError:fail}},
           {provide:JIGSAW_CONTAINER,useValue:element},
           {provide:JIGSAW_PROGRESS,useValue:(n:number)=>{if(cancelled)return;setCount(n);if(n>0)audioRef.current.snap();}},
           {provide:JIGSAW_COMPLETE,useValue:()=>{if(!cancelled&&!completionStarted){completionStarted=true;setCelebrating(true);setShowHint(false);setLeaving(false);callback.current();audioTimer=setTimeout(()=>{if(!cancelled)audioRef.current.complete();},COMPLETION_AUDIO_DELAY_MS);dialogTimer=setTimeout(()=>{if(!cancelled){setCelebrating(false);setComplete(true);}},COMPLETION_DIALOG_DELAY_MS);}}},
         ]);
         if(cancelled){await created.dispose();return;}
-        runtime=created;created.start();
-        revealTimer=setTimeout(()=>{
-          if(cancelled)return;
-          if(!animateRef.current){setStatus('ready');return;}
-          setStatus('revealing');
-          fadeTimer=setTimeout(()=>{if(!cancelled)setStatus('ready');},LOADING_FADE_MS);
-        },remainingLoadingTime(performance.now()-loadingStarted));
+        runtime=created;
+        firstFrameTimer=setTimeout(()=>fail(new Error('Puzzle first frame timed out')),10000);
+        created.start();
       }catch(error){fail(error);}
     })();
-    return ()=>{cancelled=true;controller.abort();clearTimeout(revealTimer);clearTimeout(fadeTimer);clearTimeout(audioTimer);clearTimeout(dialogTimer);if(runtime)void runtime.dispose();};
+    return ()=>{cancelled=true;controller.abort();clearTimeout(firstFrameTimer);clearTimeout(revealTimer);clearTimeout(fadeTimer);clearTimeout(audioTimer);clearTimeout(dialogTimer);if(runtime)void runtime.dispose();};
   },[game,size,puzzle.image]);
   function restart(){audioRef.current.reset();setComplete(false);setCelebrating(false);setCount(0);setShowHint(false);setStatus('loading');setGame(n=>n+1);}
   return <div className="game-shell playroom">
@@ -81,7 +89,7 @@ export function JigsawGame({ puzzle, preferences, onComplete, nextId }: { puzzle
     <progress className="playroom-progress-line" value={count} max={pieces} aria-label="Puzzle progress"/>
     <main className="playroom-workspace">
       <div className="playroom-stage">
-        <div className="scene" ref={host} aria-label="Puzzle board and piece trays"/>
+        <div className="scene" ref={host} style={{pointerEvents:status==='ready'?'auto':'none'}} aria-label="Puzzle board and piece trays"/>
         {status!=='ready'&&<StatusScreen kind={status==='error'?'error':'loading'} embedded fading={status==='revealing'} fadeDuration={LOADING_FADE_MS} onRetry={status==='error'?restart:undefined}/>}
       </div>
       {showHint&&!celebrating&&!complete&&<aside className="playroom-hint" aria-label="Picture guide"><img src={puzzle.image} alt={'Completed picture: '+puzzle.title} width={144} height={144}/><IconButton aria-label="Close picture guide" onClick={()=>setShowHint(false)}><X aria-hidden/></IconButton></aside>}
