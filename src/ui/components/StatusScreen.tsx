@@ -1,13 +1,12 @@
 import Link from 'next/link';
-import { LayoutGrid, RefreshCcw, Puzzle } from 'lucide-react';
-import { IllustrationIcon } from './IllustrationIcon';
+import { LayoutGrid, RefreshCcw } from 'lucide-react';
+import { StatusGraphic } from './StatusGraphic';
 type Props={kind:'loading'|'error'|'not-found';onRetry?:()=>void;embedded?:boolean};
 export function StatusScreen({kind,onRetry,embedded=false}:Props){
  const loading=kind==='loading';
  const content=<section className="status-card" role={loading?'status':kind==='error'?'alert':undefined} aria-busy={loading}>
    <div className={'status-art status-art--'+kind} aria-hidden="true">
-     <IllustrationIcon name={loading?'fox':kind==='error'?'teddy-bear':'rabbit'} size={112} decorative/>
-     <Puzzle className="status-puzzle-icon" size={44} strokeWidth={1.8}/>
+     <StatusGraphic kind={kind}/>
    </div>
    <h1>{loading?'Almost ready!':kind==='error'?'Oops!':'Lost a piece?'}</h1>
    <p>{loading?'Getting your puzzle ready.':kind==='error'?'This puzzle could not load.':'We could not find this picture.'}</p>
