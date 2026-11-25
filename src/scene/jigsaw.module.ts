@@ -14,11 +14,12 @@ export const JIGSAW_CONFIG = Symbol('JIGSAW_CONFIG');
     { provide: PuzzleStore, useFactory: (config: PuzzleConfig, onProgress: (n: number) => void, onComplete: () => void) => {
       const store = new PuzzleStore(config); store.callbacks = { onProgress, onComplete }; return store;
     }, inject: [JIGSAW_CONFIG, JIGSAW_PROGRESS, JIGSAW_COMPLETE] },
-    { provide: SceneResources, useFactory: (container: HTMLElement, store: PuzzleStore) => new SceneResources(container, store), inject: [JIGSAW_CONTAINER, PuzzleStore] },
     { provide: AnimationOperator, useFactory: (store: PuzzleStore) => new AnimationOperator(store), inject: [PuzzleStore] },
+    { provide: SceneResources, useFactory: (container: HTMLElement, store: PuzzleStore, animation: AnimationOperator) =>
+      new SceneResources(container, store, animation), inject: [JIGSAW_CONTAINER, PuzzleStore, AnimationOperator] },
     { provide: DragOperator, useFactory: (res: SceneResources, store: PuzzleStore, animation: AnimationOperator) =>
-      new DragOperator(res, store, (piece, lock) => animation.begin(piece, lock)), inject: [SceneResources, PuzzleStore, AnimationOperator] },
-    { provide: CelebrationOperator, useFactory: (res:SceneResources,store:PuzzleStore)=>new CelebrationOperator(res,store), inject:[SceneResources,PuzzleStore] },
+      new DragOperator(res, store, animation), inject: [SceneResources, PuzzleStore, AnimationOperator] },
+    { provide: CelebrationOperator, useFactory: (res: SceneResources, store: PuzzleStore) => new CelebrationOperator(res, store), inject: [SceneResources, PuzzleStore] },
     JigsawScene,
   ],
   exports: [JigsawScene, PuzzleStore],

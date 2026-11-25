@@ -35,6 +35,7 @@ export function loadPuzzleImage(path: string, signal?: AbortSignal, timeoutMs = 
   });
 }
 
+/** Build texture from a decoded image, or a sample gradient when no path is requested. */
 export async function createPuzzleArtwork(imagePath?: string, signal?: AbortSignal): Promise<THREE.CanvasTexture> {
   const image = imagePath === undefined ? undefined : await loadPuzzleImage(imagePath, signal);
   const canvas = document.createElement('canvas');

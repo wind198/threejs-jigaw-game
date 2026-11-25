@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import { MIN_PICKUP_Y, PICKUP_CLEARANCE, PIECE_DEPTH, PIECE_BEVEL } from '../geometry/piece-dimensions';
 import { shouldSnap } from '../../domain/puzzle';
-import type { PuzzleStore, PieceRuntime } from '../state/puzzle-store';
+import type { PuzzleStore } from '../state/puzzle-store';
 import type { SceneResources } from '../resources/scene-resources';
+import type { AnimationOperator } from './animation.operator';
 type Command = { type:'start'; id:number; liftY:number } | { type:'move'; position:THREE.Vector3 } | { type:'end'; cancel?:boolean };
 /** Pointer capture supports drag and tap-to-place. Raycasting selects the nearest (topmost) resting piece. */
 export class DragOperator {
@@ -22,7 +23,7 @@ export class DragOperator {
   private readonly move = (e:PointerEvent) => this.pointerMove(e);
   private readonly up = (e:PointerEvent) => this.pointerUp(e,false);
   private readonly cancel = (e:PointerEvent) => this.pointerUp(e,true);
-  constructor(private readonly res:SceneResources,private readonly store:PuzzleStore,private readonly animate:(piece:PieceRuntime,lock:boolean)=>void) {
+  constructor(private readonly res:SceneResources,private readonly store:PuzzleStore,private readonly animation:AnimationOperator) {
     this.canvas=res.renderer.domElement;
     this.canvas.addEventListener('pointerdown',this.down);
     this.canvas.addEventListener('pointermove',this.move);
@@ -37,7 +38,7 @@ export class DragOperator {
   }
   private onPlane(e:PointerEvent) { this.rayFrom(e); return this.ray.ray.intersectPlane(this.plane,new THREE.Vector3()); }
   private pointerDown(e:PointerEvent) {
-    if(this.pointerId!==null || e.button!==0 || this.store.session.complete || this.store.pieces.some(p=>['dropping','snapping'].includes(this.store.session.getState(p.definition.id)))) return;
+    if(this.pointerId!==null || e.button!==0 || this.store.session.complete || this.animation.busy || this.store.pieces.some(p=>['dropping','snapping'].includes(this.store.session.getState(p.definition.id)))) return;
     const pos=this.onPlane(e); if(!pos)return;
     this.placing=this.selected!==null;
     if(!this.placing){
@@ -79,7 +80,7 @@ export class DragOperator {
         const id=this.store.active;this.store.active=null;const piece=this.store.pieces[id];
         const lock=!cmd.cancel && shouldSnap({x:piece.mesh.position.x,y:piece.mesh.position.z},{x:piece.target.x,y:piece.target.z},6/this.store.config.size);
         if(!lock&&!cmd.cancel)this.res.relocateHome(piece);
-        this.store.session.transition(id,lock?'snapping':'dropping');this.animate(piece,lock);
+        this.store.session.transition(id,lock?'snapping':'dropping');this.animation.begin(piece,lock);
       }
     }
   }

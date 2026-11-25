@@ -7,6 +7,8 @@ import { dropOnTray } from '../layouts/drop-layout';
 import { settleStack } from '../layouts/stack-layout';
 import { RESTING_Y, LOCKED_Y, TRAY_CENTER_Y, TRAY_DEPTH_Y } from '../geometry/piece-dimensions';
 import { PuzzleStore } from '../state/puzzle-store';
+import type { AnimationOperator } from '../operators/animation.operator';
+
 export class SceneResources {
   readonly scene = new THREE.Scene();
   readonly camera = new THREE.OrthographicCamera(-8, 8, 5, -5, .1, 100);
@@ -22,7 +24,12 @@ export class SceneResources {
   private appliedAspect = 0;
   private dirty = true;
   private aspect = 0;
-  constructor(readonly container: HTMLElement, readonly store: PuzzleStore) {
+  private disposed = false;
+  constructor(
+    readonly container: HTMLElement,
+    readonly store: PuzzleStore,
+    private readonly animation: AnimationOperator,
+  ) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -40,15 +47,32 @@ export class SceneResources {
     Object.assign(light.shadow.camera, { left: -13, right: 13, top: 13, bottom: -13, near: 1, far: 35 });
     light.shadow.bias = -.00015; light.shadow.normalBias = .006;
     this.scene.add(light); this.objects.push(light);
+    // Empty board + trays immediately — pieces wait for artwork.
+    this.buildBoard();
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(container);
     this.resize();
   }
-  async onSceneInit() {
-    this.artwork = await createPuzzleArtwork(this.store.config.image, this.store.config.signal);
-    this.buildBoard();
-    this.buildPieces(this.artwork);
+  onSceneInit() {
     this.updateLayout();
+    void this.spawnPiecesWhenReady();
+  }
+  private async spawnPiecesWhenReady() {
+    try {
+      const artwork = await createPuzzleArtwork(this.store.config.image, this.store.config.signal);
+      if (this.disposed) { artwork.dispose(); return; }
+      this.artwork = artwork;
+      this.buildPieces(artwork);
+      this.scatterPending = true;
+      this.updateLayout();
+      // Upload materials/geometry while still invisible, then reveal together.
+      this.renderer.compile(this.scene, this.camera);
+      this.animation.introDrop(this.store.pieces);
+    } catch (error) {
+      if (this.disposed) return;
+      if (error instanceof Error && /cancelled/i.test(error.message)) return;
+      this.store.config.onError?.(error);
+    }
   }
   private addBox(w: number, h: number, d: number, color: number, x: number, y: number, z: number) {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color, roughness: .87 }));
@@ -70,6 +94,7 @@ export class SceneResources {
   private buildPieces(artwork: THREE.CanvasTexture) {
     this.store.pieces = this.store.session.pieces.map(def => {
       const mesh = createPieceMesh(def, artwork);
+      mesh.visible = false;
       const home = new THREE.Vector3(0, RESTING_Y, 0);
       const target = new THREE.Vector3(def.target.x - 3, LOCKED_Y, def.target.y - 3);
       mesh.position.copy(home); this.scene.add(mesh); this.objects.push(mesh);
@@ -78,7 +103,7 @@ export class SceneResources {
   }
   private resize() {
     const w = Math.max(1, this.container.clientWidth), h = Math.max(1, this.container.clientHeight);
-    this.renderer.setSize(w,h);
+    this.renderer.setSize(w, h);
     this.aspect = w / h;
     this.dirty = true;
   }
@@ -86,58 +111,58 @@ export class SceneResources {
     for (const mesh of this.trayMeshes) {
       this.scene.remove(mesh); mesh.geometry.dispose();
       (mesh.material as THREE.Material).dispose();
-      this.objects.splice(this.objects.indexOf(mesh),1);
+      this.objects.splice(this.objects.indexOf(mesh), 1);
     }
-    this.trayMeshes = layout.trays.map(t => this.addBox(t.width,TRAY_DEPTH_Y,t.depth,0xe0cdb1,t.x,TRAY_CENTER_Y,t.z));
-    this.trayMeshes.push(this.addBox(layout.width,.25,layout.depth,0xf7eee3,0,-.46,layout.centerZ));
+    this.trayMeshes = layout.trays.map(t => this.addBox(t.width, TRAY_DEPTH_Y, t.depth, 0xe0cdb1, t.x, TRAY_CENTER_Y, t.z));
+    this.trayMeshes.push(this.addBox(layout.width, .25, layout.depth, 0xf7eee3, 0, -.46, layout.centerZ));
   }
   /** Update the loose piece's home only for a valid tray drop. */
   relocateHome(piece: import('../state/puzzle-store').PieceRuntime) {
-    if(!this.layout)return;
-    const supports=this.store.pieces.filter(p=>p!==piece&&['resting','dropping'].includes(this.store.session.getState(p.definition.id))).map(p=>p.home);
-    const slot=dropOnTray(this.layout,piece.mesh.position,pieceRadius(this.store.config.size),supports);
-    if(slot)piece.home.set(slot.x,slot.y,slot.z);
-    this.settlePending=true;
+    if (!this.layout) return;
+    const supports = this.store.pieces.filter(p => p !== piece && ['resting', 'dropping'].includes(this.store.session.getState(p.definition.id))).map(p => p.home);
+    const slot = dropOnTray(this.layout, piece.mesh.position, pieceRadius(this.store.config.size), supports);
+    if (slot) piece.home.set(slot.x, slot.y, slot.z);
+    this.settlePending = true;
   }
   private isIdle() {
-    return this.store.pieces.every(p => ['resting','locked'].includes(this.store.session.getState(p.definition.id)));
+    return !this.animation.busy && this.store.pieces.every(p => ['resting', 'locked'].includes(this.store.session.getState(p.definition.id)));
   }
   /** Run after input and animations, never relocate a piece in flight. */
   updateLayout() {
-    if (!this.isIdle()) return;
+    if (!this.isIdle() && this.store.pieces.length) return;
     if (this.dirty) {
-      const next = createPlayroomLayout(this.store.config.size,Math.max(.01,this.aspect));
-      if (!this.layout || Math.abs(this.appliedAspect-this.aspect)>0.0001) {
-        this.layout=next; this.appliedAspect=this.aspect; this.rebuildTrays(next); this.scatterPending=true;
+      const next = createPlayroomLayout(this.store.config.size, Math.max(.01, this.aspect));
+      if (!this.layout || Math.abs(this.appliedAspect - this.aspect) > 0.0001) {
+        this.layout = next; this.appliedAspect = this.aspect; this.rebuildTrays(next); this.scatterPending = true;
       }
-      const frame = frameLayout(this.layout,Math.max(.01,this.aspect));
-      this.camera.position.set(0,30,frame.centerZ); this.camera.lookAt(0,0,frame.centerZ);
-      this.camera.left = -frame.width/2; this.camera.right = frame.width/2;
-      this.camera.top = frame.height/2; this.camera.bottom = -frame.height/2;
+      const frame = frameLayout(this.layout, Math.max(.01, this.aspect));
+      this.camera.position.set(0, 30, frame.centerZ); this.camera.lookAt(0, 0, frame.centerZ);
+      this.camera.left = -frame.width / 2; this.camera.right = frame.width / 2;
+      this.camera.top = frame.height / 2; this.camera.bottom = -frame.height / 2;
       this.camera.updateProjectionMatrix(); this.camera.updateMatrixWorld();
       this.dirty = false;
     }
-    if (!this.layout) return;
-    const remaining=this.store.pieces.filter(p=>this.store.session.getState(p.definition.id)==='resting');
-    if(this.scatterPending){
-      const slots=scatterPieces(this.layout,this.store.config.size,remaining.map(p=>p.definition.id),2026);
-      for(const piece of remaining){
-        const slot=slots.get(piece.definition.id)!;
-        piece.home.set(slot.x,slot.y,slot.z);
-        piece.mesh.visible=true;piece.mesh.position.copy(piece.home);piece.mesh.updateMatrixWorld(true);
+    if (!this.layout || !this.store.pieces.length) return;
+    const remaining = this.store.pieces.filter(p => this.store.session.getState(p.definition.id) === 'resting');
+    if (this.scatterPending) {
+      const slots = scatterPieces(this.layout, this.store.config.size, remaining.map(p => p.definition.id), 2026);
+      for (const piece of remaining) {
+        const slot = slots.get(piece.definition.id)!;
+        piece.home.set(slot.x, slot.y, slot.z);
+        piece.mesh.position.copy(piece.home); piece.mesh.updateMatrixWorld(true);
       }
-      this.scatterPending=false;
-      this.settledCount=remaining.length;
-    } else if(this.settlePending||this.settledCount!==remaining.length) {
-      // Preserve XZ homes and the existing relative stacking order after a piece is placed.
-      const ordered=[...remaining].sort((a,b)=>a.home.y-b.home.y||a.definition.id-b.definition.id);
-      const slots=settleStack(ordered.map(p=>p.home),pieceRadius(this.store.config.size));
-      ordered.forEach((piece,i)=>{piece.home.y=slots[i].y;piece.mesh.position.copy(piece.home);piece.mesh.updateMatrixWorld(true);});
-      this.settledCount=remaining.length;
+      this.scatterPending = false;
+      this.settledCount = remaining.length;
+    } else if (this.settlePending || this.settledCount !== remaining.length) {
+      const ordered = [...remaining].sort((a, b) => a.home.y - b.home.y || a.definition.id - b.definition.id);
+      const slots = settleStack(ordered.map(p => p.home), pieceRadius(this.store.config.size));
+      ordered.forEach((piece, i) => { piece.home.y = slots[i].y; piece.mesh.position.copy(piece.home); piece.mesh.updateMatrixWorld(true); });
+      this.settledCount = remaining.length;
     }
-    this.settlePending=false;
+    this.settlePending = false;
   }
   onSceneDestroy() {
+    this.disposed = true;
     this.resizeObserver.disconnect();
     for (const obj of this.objects) {
       if (obj instanceof THREE.Mesh) {
