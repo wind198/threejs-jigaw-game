@@ -20,3 +20,10 @@
 .playroom-progress-line::-moz-progress-bar { background:var(--color-primary); }
 
 .playroom-artwork-status {position:absolute;bottom:12px;left:50%;transform:translateX(-50%);padding:8px 14px;border-radius:var(--radius-md);background:var(--color-paper);color:var(--color-ink);font-size:13px;text-align:center;pointer-events:none;white-space:nowrap;}
+
+/* Keep the static shell visible through hydration and lazy bundle loading. */
+.playroom-entry {position:relative;min-height:100dvh;}
+.playroom-entry-content:empty {display:none;}
+.playroom-entry:has(.playroom-entry-content > .playroom) > .playroom-entry-fallback {display:none;}
+.playroom-entry-board {position:absolute;inset:0;display:grid;place-items:center;}
+.playroom-entry-board p {margin:0;padding:12px 18px;color:var(--color-ink);background:var(--color-paper);border-radius:var(--radius-md);font-size:14px;}

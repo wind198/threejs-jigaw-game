@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getPuzzle,puzzles } from '../../../src/content/puzzles';
-import { PuzzleLanding } from '../../../src/ui/pages/PuzzleLanding';
+import { PlayEntry } from '../../../src/ui/features/play/PlayEntry';
 import { pageMetadata } from '../../../src/seo/metadata';
 import { puzzleTitle,puzzleDescription,puzzlePath } from '../../../src/seo/catalog';
 export const dynamicParams=false;
@@ -13,5 +13,5 @@ export async function generateMetadata({params}:{params:Promise<{puzzleId:string
 export default async function Page({params}:{params:Promise<{puzzleId:string}>}){
  const puzzle=getPuzzle((await params).puzzleId);
  if(!puzzle)notFound();
- return <PuzzleLanding puzzle={puzzle}/>;
+ return <PlayEntry key={puzzle.id} puzzle={puzzle}/>;
 }

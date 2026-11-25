@@ -12,7 +12,7 @@ for(const page of indexablePages()){
  assert.ok(sitemap.includes('<loc>'+canonical+'</loc>'),canonical);
  const title=html.match(/<title>(.*?)<\/title>/)?.[1];assert.ok(title&&!titles.has(title),canonical);titles.add(title);
  assert.ok(!/<meta name="robots" content="[^"]*noindex/.test(html),canonical);
- if(page.image){assert.ok(html.includes('src="'+page.image+'"'),page.path);assert.ok(catalog.includes('href="'+page.path+'"'),page.path);assert.ok(existsSync('out'+page.image),page.image);}
+ if(page.image){assert.ok(sitemap.includes('<image:loc>'+new URL(page.image,site).href+'</image:loc>'),page.path);assert.ok(html.includes('content="'+new URL(page.image,site).href+'"'),page.path);assert.ok(html.includes('playroom-entry-fallback'),page.path);assert.ok(!html.includes('data-play-entry'),page.path);assert.ok(catalog.includes('href="'+page.path+'"'),page.path);assert.ok(existsSync('out'+page.image),page.image);}
 }
 assert.ok(!sitemap.includes('/parents/'));
 assert.ok(readFileSync('out/parents/index.html','utf8').includes('noindex'));
