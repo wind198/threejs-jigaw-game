@@ -10,6 +10,6 @@ export function GamePage({ puzzle }: { puzzle: Puzzle }) {
   const { preferences, setPreferences } = useGamePreferences();
   const [completed, setCompleted] = useCompletedPuzzles();
   if (!client) return null;
-  if (!preferences.setupCompleted) return <main className="site-page"><h1>{puzzle.title}</h1><SetupOverlay preferences={preferences} onComplete={setPreferences}/></main>;
+  if (!preferences.setupCompleted) return <div className="playroom-setup"><SetupOverlay preferences={preferences} onComplete={setPreferences}/></div>;
   return <JigsawGame key={puzzle.id + ':' + preferences.difficulty} puzzle={puzzle} preferences={preferences} onComplete={() => setCompleted(old => old.includes(puzzle.id) ? old : [...old, puzzle.id])} nextId={recommendNextPuzzle(puzzle.id,completed).id} completedCount={completed.length}/>;
 }

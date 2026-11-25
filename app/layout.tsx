@@ -9,7 +9,6 @@ import '../src/ui/styles/dialogs.css';
 import '../src/ui/styles/feedback.css';
 
 import { SITE_NAME, SITE_DESCRIPTION, siteUrl } from '../src/seo/site';
-import '../src/ui/styles/puzzle-landing.css';
 export const metadata: Metadata = {
   ...(siteUrl ? { metadataBase: siteUrl } : {}),
   title: { default: 'Free Online Jigsaw Puzzles for Kids | Little Jigsaw 3D', template: '%s | Little Jigsaw 3D' },
